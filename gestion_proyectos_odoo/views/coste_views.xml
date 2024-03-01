@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.act_window" id="cost_list_action">
+            <field name="name">Costes</field>
+            <field name="res_model">gestion_proyectos.coste</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="cost_menu" name="Costes"
+                  parent="main_gestion_proyectos_menu"
+                  action="cost_list_action"/>
+
+        <record id="view_cost_tree" model="ir.ui.view">
+            <field name="name">coste.tree</field>
+            <field name="model">gestion_proyectos.coste</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="nombre"/>
+                    <field name="descripcion"/>
+                    <field name="presupuesto"/>
+                    <field name="iva"/>
+                    <field name="total"/>
+                    <field name="proyectos_relacionados" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_cost_search">
+        <field name="name">gestion_proyectos.search</field>
+        <field name="model">gestion_proyectos.coste</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nombre"/>
+                <field name="descripcion"/>
+            </search>
+        </field>
+        </record>
+
+        <record id="view_cost_form" model="ir.ui.view">
+            <field name="name">cost.form</field>
+            <field name="model">gestion_proyectos.coste</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="nombre"/>
+                            <field name="descripcion"/>
+                            <field name="presupuesto"/>
+                            <field name="iva"/>
+                            <field name="total"/>
+                            <field name="proyectos_relacionados" widget="many2many_tags"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
