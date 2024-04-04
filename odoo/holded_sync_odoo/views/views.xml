@@ -1,0 +1,36 @@
+<odoo>
+  <data>
+
+<!--    &lt;!&ndash; server action to the one above &ndash;&gt;-->
+
+<!--    <record model="ir.actions.server" id="holded_sync.action_server">-->
+<!--      <field name="name">holded_sync server</field>-->
+<!--      <field name="model_id" ref="model_holded_sync_holded_sync"/>-->
+<!--      <field name="state">code</field>-->
+<!--      <field name="code">-->
+<!--        action = {-->
+<!--          "type": "ir.actions.act_window",-->
+<!--          "view_mode": "tree,form",-->
+<!--          "res_model": model._name,-->
+<!--        }-->
+<!--      </field>-->
+<!--    </record>-->
+
+    <!-- Top menu item -->
+
+<!--    <menuitem name="holded_sync" id="holded_sync.menu_root"/>-->
+
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="holded_sync.menu_1" parent="holded_sync.menu_root"/>
+    <menuitem name="Menu 2" id="holded_sync.menu_2" parent="holded_sync.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="holded_sync.menu_1_list" parent="holded_sync.menu_1"
+              action="holded_sync.action_window"/>
+    <menuitem name="Server to list" id="holded_sync" parent="holded_sync.menu_2"
+              action="holded_sync.action_server"/>
+-->
+  </data>
+</odoo>
