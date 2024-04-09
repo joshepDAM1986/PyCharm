@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.act_window" id="odoo_products_list_action">
+            <field name="name">Odoo Products</field>
+            <field name="res_model">holded_sync_odoo.odoo_products</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">New Product
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="odoo_products_menu" name="Odoo Products"
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_products_list_action"/>
+
+        <record id="view_odoo_products_tree" model="ir.ui.view">
+            <field name="name">odoo_products.tree</field>
+            <field name="model">holded_sync_odoo.odoo_products</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <button name="sync_odoo_products_button" string="Sync Odoo Products" type="object" class="btn-primary"/>
+                    <field name="holded_id"/>
+                    <field name="sku"/>
+                    <field name="kind"/>
+                    <field name="name"/>
+                    <field name="purchasePrice"/>
+                    <field name="price"/>
+                    <field name="total"/>
+                    <field name="barcode"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_odoo_products_search">
+            <field name="name">odoo_products.search</field>
+            <field name="model">holded_sync_odoo.odoo_products</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_odoo_products_form" model="ir.ui.view">
+            <field name="name">odoo_products.form</field>
+            <field name="model">holded_sync_odoo.odoo_products</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="holded_id"/>
+                            <field name="sku"/>
+                            <field name="kind"/>
+                            <field name="name"/>
+                            <field name="purchasePrice"/>
+                            <field name="price"/>
+                            <field name="total"/>
+                            <field name="barcode"/>
+                        </group>
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
