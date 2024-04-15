@@ -10,6 +10,7 @@ class Product(models.Model):
     _name = 'holded_sync_odoo.odoo_products'
     _description = 'Odoo internal products to be synchronized and exported to Holded ERP'
 
+    # Campos del modelo para los productos
     holded_id = fields.Char(string='Holded ID')
     sku = fields.Char(string='SKU')
     kind = fields.Char(string='Kind')
@@ -23,9 +24,10 @@ class Product(models.Model):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"  # Clave de la API de Holded
         }
 
+        # Datos del producto a enviar a Holded
         product_data = {
             "sku": odoo_product.code,
             "kind": "simple",
@@ -34,14 +36,15 @@ class Product(models.Model):
             "purchasePrice": odoo_product.standard_price,
             "total": odoo_product.list_price,
             "barcode": odoo_product.barcode,
-
         }
 
-        holded_product = next((product for product in holded_products if product['sku'] == odoo_product.default_code), None)
+        # Buscar si el producto ya existe en Holded
+        holded_product = next((product for product in holded_products if product['sku'] == odoo_product.default_code),
+                              None)
 
+        # Si el producto existe, actualizarlo; de lo contrario, crear uno nuevo
         if holded_product:
             url_update_holded_product = f"https://api.holded.com/api/invoicing/v1/products/{holded_product['id']}"
-
             response = requests.put(url_update_holded_product, headers=headers, json=product_data)
             if response.status_code == 200:
                 _logger.info("Updated product in Holded: %s", product_data)
@@ -62,14 +65,17 @@ class Product(models.Model):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"  # Clave de la API de Holded
         }
 
+        # Obtener la lista de productos de Holded
         response = requests.get(url_get_holded_products, headers=headers)
         holded_products = response.json()
 
+        # Obtener todos los productos de Odoo
         odoo_products = self.env['product.product'].search([])
 
+        # Para cada producto de Odoo, insertarlo o actualizarlo en Holded
         for odoo_product in odoo_products:
             self.insert_or_update_product(odoo_product, holded_products)
 
@@ -77,9 +83,10 @@ class Product(models.Model):
         url = "https://api.holded.com/api/invoicing/v1/products"
         headers = {
             "accept": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"  # Clave de la API de Holded
         }
 
+        # Obtener la lista de productos de Holded
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             product_list = response.json()
@@ -105,6 +112,6 @@ class Product(models.Model):
         else:
             _logger.error("Error while fetching products from Holded: %s", response.text)
 
-    def sync_odoo_products_button(self):
+    def sync_products_button(self):
         self.insert_products()
         self.bring_products()

@@ -2,6 +2,7 @@ from odoo import models, fields
 
 import requests
 
+
 class Product(models.Model):
     _name = 'holded_sync_odoo.custom_products'
     _description = 'Custom Odoo module products to be synchronized with Holded'
@@ -37,7 +38,7 @@ class Product(models.Model):
                 "total": odoo_product.list_price,
                 "barcode": odoo_product.barcode,
             }
-            
+
             requests.post(url, headers=headers, json=product_data)
 
     def bring_products(self):
@@ -50,7 +51,6 @@ class Product(models.Model):
         response = requests.get(url, headers=headers)
         product_list = response.json()
 
-        #comprueba todos los productos de odoo
         odoo_products = self.env['holded_sync_odoo.custom_products'].search([])
 
         for product_data in product_list:
@@ -72,10 +72,9 @@ class Product(models.Model):
             else:
                 product_exist.write(product_info)
 
-    def sync_custom_products_button(self):
+    def sync_products_button(self):
         self.bring_products()
 
-    # @api.model
     # def _cron_sync_holded_product(self):
     #     self.insert_products()
     #     self.bring_products()

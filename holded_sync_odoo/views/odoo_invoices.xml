@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.act_window" id="odoo_invoices_list_action">
+            <field name="name">Sync Invoices</field>
+            <field name="res_model">holded_sync_odoo.odoo_invoices</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">New Invoice</p>
+            </field>
+            <field name="context">{'button_sync_visible': True}</field>
+        </record>
+
+        <menuitem id="odoo_invoices_menu" name="Odoo Invoices"
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_invoices_list_action"/>
+
+        <record id="view_odoo_invoices_tree" model="ir.ui.view">
+            <field name="name">odoo_invoices.tree</field>
+            <field name="model">holded_sync_odoo.odoo_invoices</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>
+                    <field name="holded_id"/>
+                    <field name="contactName"/>
+                    <field name="invoiceNum"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_odoo_invoices_search">
+            <field name="name">odoo_invoices.search</field>
+            <field name="model">holded_sync_odoo.odoo_invoices</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_sync_invoice_form" model="ir.ui.view">
+            <field name="name">odoo_invoices.form</field>
+            <field name="model">holded_sync_odoo.odoo_invoices</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+
+                        </group>
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

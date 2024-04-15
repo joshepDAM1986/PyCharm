@@ -16,7 +16,7 @@
             <field name="model">holded_sync_odoo.custom_products</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_custom_products_button" string="Sync Products" type="object" class="btn-primary"/>
+                    <button name="sync_products_button" string="Sync Products" type="object" class="btn-primary"/>
                     <field name="holded_id"/>
                     <field name="sku"/>
                     <field name="kind"/>
@@ -74,7 +74,7 @@
 <!--            <field eval="True" name="active"/>-->
 <!--        </record>-->
 
-        <menuitem id="main_holded_sync_odoo_menu" name="Holded Sync Odoo" action="custom_products_list_action"/>
-        <menuitem id="custom_products_menu" name="Custom Products" parent="main_holded_sync_odoo_menu" action="custom_products_list_action"/>
+        <menuitem id="main_holded_sync_odoo_menu" name="Holded Sync Odoo" action="odoo_products_list_action"/>
+<!--    <menuitem id="custom_products_menu" name="Custom Products" parent="main_holded_sync_odoo_menu" action="custom_products_list_action"/>-->
     </data>
 </odoo>

@@ -10,12 +10,12 @@
     'website': "http://www.whitewallsolutions.com",
     'category': 'Accounting',
     'version': '0.1',
-    'depends': ['base'],
+    'depends': ['base','account'],
     'data': [
         'views/custom_products.xml',
         'views/odoo_products.xml',
         'views/odoo_customers.xml',
-        'views/sync_invoices.xml',
+        'views/odoo_invoices.xml',
     ],
     'demo': [
         'demo/demo.xml',

@@ -20,7 +20,7 @@
             <field name="model">holded_sync_odoo.odoo_customers</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_odoo_customers_button" string="Sync Odoo Customers" type="object" class="btn-primary"/>
+                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_id"/>
                     <field name="name"/>
                     <field name="code"/>
@@ -29,6 +29,12 @@
                     <field name="phone"/>
                     <field name="mobile"/>
                     <field name="address"/>
+                    <field name="city"/>
+                    <field name="postalCode"/>
+                    <field name="province"/>
+                    <field name="country"/>
+                    <field name="countryCode"/>
+                     <field name="tags" widget="customer_tags_widget"/>
                 </tree>
             </field>
         </record>
@@ -57,6 +63,12 @@
                             <field name="phone"/>
                             <field name="mobile"/>
                             <field name="address"/>
+                            <field name="city"/>
+                            <field name="postalCode"/>
+                            <field name="province"/>
+                            <field name="country"/>
+                            <field name="countryCode"/>
+                             <field name="tags" widget="customer_tags_widget"/>
                         </group>
                         <notebook>
 

@@ -20,7 +20,7 @@
             <field name="model">holded_sync_odoo.odoo_products</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_odoo_products_button" string="Sync Odoo Products" type="object" class="btn-primary"/>
+                    <button name="sync_products_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_id"/>
                     <field name="sku"/>
                     <field name="kind"/>
