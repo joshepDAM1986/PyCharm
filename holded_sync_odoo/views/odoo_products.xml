@@ -49,14 +49,7 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="holded_id"/>
-                            <field name="sku"/>
-                            <field name="kind"/>
-                            <field name="name"/>
-                            <field name="purchasePrice"/>
-                            <field name="price"/>
-                            <field name="total"/>
-                            <field name="barcode"/>
+
                         </group>
                         <notebook>
 

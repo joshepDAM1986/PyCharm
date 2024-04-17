@@ -55,20 +55,7 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="holded_id"/>
-                            <field name="name"/>
-                            <field name="code"/>
-                            <field name="email"/>
-                            <field name="website"/>
-                            <field name="phone"/>
-                            <field name="mobile"/>
-                            <field name="address"/>
-                            <field name="city"/>
-                            <field name="postalCode"/>
-                            <field name="province"/>
-                            <field name="country"/>
-                            <field name="countryCode"/>
-                             <field name="tags" widget="customer_tags_widget"/>
+
                         </group>
                         <notebook>
 

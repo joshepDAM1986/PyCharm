@@ -15,6 +15,7 @@ class Invoice(models.Model):
     invoiceNum = fields.Char(string='Invoice Number')
     contactName = fields.Char(string='Customer Name')
     payment_state = fields.Char(string='Payment State')
+    status = fields.Char(string='Payment Status')
 
     def insert_invoices(self):
         odoo_invoices = self.env['account.move'].search([])
@@ -26,7 +27,6 @@ class Invoice(models.Model):
         for odoo_invoice in odoo_invoices:
             if odoo_invoice.state != "draft" and odoo_invoice.move_type != "entry":
                 url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
-
                 headers = {
                     "accept": "application/json",
                     "content-type": "application/json",
@@ -53,9 +53,19 @@ class Invoice(models.Model):
                     "contactName": odoo_invoice.partner_id.name
                 }
 
-                response = requests.post(url, json=invoice_data, headers=headers)
-                if response.status_code == 200:
-                    _logger.info("Holded request for invoice %s: %s", odoo_invoice.id, response.text)
+                # Verificar si la factura ya existe en Holded
+                holded_invoice_exists = self.env['holded_sync_odoo.odoo_invoices'].search([
+                    ('invoiceNum', '=', odoo_invoice.name)
+                ])
+
+                if not holded_invoice_exists:
+                    response = requests.post(url, json=invoice_data, headers=headers)
+                    if response.status_code == 200:
+                        _logger.info("Holded request for invoice %s: %s", odoo_invoice.id, response.text)
+                    else:
+                        _logger.error("Error inserting invoice %s in Holded: %s", odoo_invoice.id, response.text)
+                else:
+                    _logger.info("Invoice %s already exists in Holded, skipping insertion", odoo_invoice.name)
 
     def pay_invoices(self, holded_id):
         odoo_invoices = self.env['account.move'].search([])
@@ -87,7 +97,33 @@ class Invoice(models.Model):
                 else:
                     _logger.error("Error paying invoice %s in Holded: %s", holded_id, response.text)
 
-    def bring_invoices(self):
+    def bring_invoices_odoo(self):
+        url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
+        headers = {
+            "accept": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            invoices_list = response.json()
+            odoo_invoices = self.env['holded_sync_odoo.odoo_invoices'].search([])
+
+            # Eliminar todas las facturas existentes antes de insertar las nuevas
+            existing_invoices = odoo_invoices.search([])
+            existing_invoices.unlink()
+
+            for invoice_data in invoices_list:
+                invoice_info = {
+                    "holded_id": invoice_data.get('id'),
+                    "contactName": invoice_data.get('contactName'),
+                    "invoiceNum": invoice_data.get('docNumber'),
+                    "status": invoice_data.get('status'),
+                }
+
+                self.env['holded_sync_odoo.odoo_invoices'].create(invoice_info)
+
+    def update_invoices_odoo(self):
         url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
         headers = {
             "accept": "application/json",
@@ -104,19 +140,21 @@ class Invoice(models.Model):
                     "holded_id": invoice_data.get('id'),
                     "contactName":invoice_data.get('contactName'),
                     "invoiceNum": invoice_data.get('docNumber'),
+                    "status": invoice_data.get('status'),
                 }
 
                 invoice_exist = odoo_invoices.filtered(lambda i: i.invoiceNum == invoice_data.get('docNumber'))
                 if not invoice_exist:
                     self.env['holded_sync_odoo.odoo_invoices'].create(invoice_info)
                 else:
-                    invoice_exist.write(invoice_info.get('contactName'))
-
+                    invoice_exist.write(invoice_info)
 
     # Método para sincronizar las facturas al hacer clic en un botón
     def sync_invoices_button(self):
+        self.bring_invoices_odoo()
         self.insert_invoices()
-        self.bring_invoices()
+        self.update_invoices_odoo()
+
         holded_invoices_to_pay = self.env['holded_sync_odoo.odoo_invoices'].search([('invoiceNum', '!=', False)])
         for pay_holded_invoice in holded_invoices_to_pay:
             odoo_invoice = self.env['account.move'].search([('name', '=', pay_holded_invoice.invoiceNum)])
