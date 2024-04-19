@@ -24,7 +24,7 @@
                     <field name="holded_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>
-                    <field name="status"/>
+                    <field name="holded_payment_state"/>
                 </tree>
             </field>
         </record>
