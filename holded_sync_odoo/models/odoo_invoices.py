@@ -118,8 +118,8 @@ class Invoice(models.Model):
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 invoices_list = response.json()
-                odoo_invoices = self.env['holded_sync_odoo.odoo_invoices']
-                existing_invoices = odoo_invoices.search([])
+                odoo_invoices = self.env['holded_sync_odoo.odoo_invoices'].search([])
+                existing_invoices = odoo_invoices
                 existing_invoices.unlink()
                 for invoice_data in invoices_list:
                     invoice_info = {

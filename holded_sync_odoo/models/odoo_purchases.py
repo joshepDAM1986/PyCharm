@@ -1,3 +1,4 @@
+
 from odoo import models, fields
 from datetime import datetime
 import requests
@@ -119,8 +120,8 @@ class Purchase(models.Model):
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 purchases_list = response.json()
-                odoo_purchases = self.env['holded_sync_odoo.odoo_purchases']
-                existing_purchases = odoo_purchases.search([])
+                odoo_purchases = self.env['holded_sync_odoo.odoo_purchases'].search([])
+                existing_purchases = odoo_purchases
                 existing_purchases.unlink()
                 for purchase_data in purchases_list:
                     purchase_info = {
@@ -143,7 +144,7 @@ class Purchase(models.Model):
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 purchases_list = response.json()
-                odoo_purchases = self.env['holded_sync_odoo.odoo_purchases'].search[()]
+                odoo_purchases = self.env['holded_sync_odoo.odoo_purchases'].search([])
                 for purchase_data in purchases_list:
 
                     purchase_info = {
