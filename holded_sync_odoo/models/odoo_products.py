@@ -14,8 +14,8 @@ class Product(models.Model):
     name = fields.Char(string='Name')
     price = fields.Float(string='Price')
     purchasePrice = fields.Float(string='Purchase Price')
+    cost = fields.Float(string='Cost Price')
     barcode = fields.Char(string='Barcode')
-    total = fields.Float(string='Total')
 
     def insert_or_update_products(self, odoo_product, holded_products):
         try:
@@ -29,9 +29,9 @@ class Product(models.Model):
                 "sku": odoo_product.code,
                 "kind": "simple",
                 "name": odoo_product.name,
-                "price": odoo_product.lst_price,
+                "price": odoo_product.list_price,
                 "purchasePrice": odoo_product.standard_price,
-                "total": odoo_product.list_price,
+                "cost": odoo_product.standard_price,
                 "barcode": odoo_product.barcode,
             }
 
@@ -97,7 +97,6 @@ class Product(models.Model):
                         "name": product_data.get('name'),
                         "price": product_data.get('price'),
                         "purchasePrice": product_data.get('purchasePrice'),
-                        "total": product_data.get('total'),
                         "barcode": product_data.get('barcode'),
                     }
 

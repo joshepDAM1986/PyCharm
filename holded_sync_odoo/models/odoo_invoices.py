@@ -29,7 +29,9 @@ class Invoice(models.Model):
     def process_batch(self, batch_invoices):
         try:
             for odoo_invoice in batch_invoices:
-                if odoo_invoice.state != "draft" and odoo_invoice.move_type != "entry":
+                if (odoo_invoice.state != "draft"
+                        and odoo_invoice.move_type != "entry"
+                        and odoo_invoice.move_type == "out_invoice") :
                     url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
                     headers = {
                         "accept": "application/json",
@@ -66,37 +68,6 @@ class Invoice(models.Model):
                         _logger.info("Invoice %s already exists in Holded, skipping insertion", odoo_invoice.name)
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
-
-    # def update_holded_invoices(self):
-    #     try:
-    #         odoo_invoices = self.env['account.move'].search([])
-    #         for odoo_invoice in odoo_invoices:
-    #             if odoo_invoice.state != "draft" and odoo_invoice.move_type != "entry":
-    #                 holded_invoice = self.env['holded_sync_odoo.odoo_invoices'].search(
-    #                     [('invoiceNum', '=', odoo_invoice.name)])
-    #                 if holded_invoice:
-    #                     url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_invoice.holded_id}"
-    #                     headers = {
-    #                         "accept": "application/json",
-    #                         "content-type": "application/json",
-    #                         "key": "cf6626233fa4b33a99aa841dd37a11a9"
-    #                     }
-    #                     invoice_data = {
-    #                         "items": [{
-    #                             "units": line.quantity,
-    #                             "sku": line.product_id.default_code
-    #                         } for line in odoo_invoice.invoice_line_ids],
-    #                     }
-    #                     response = requests.put(url, json=invoice_data, headers=headers)
-    #                     if response.status_code == 200:
-    #                         _logger.info("Invoice %s successfully updated in Holded", holded_invoice.holded_id)
-    #                     else:
-    #                         _logger.error("Error updating invoice %s in Holded: %s", holded_invoice.holded_id,
-    #                                       response.text)
-    #                 else:
-    #                     _logger.warning("Holded invoice not found for Odoo invoice %s", odoo_invoice.name)
-    #     except Exception as e:
-    #         _logger.error("An error occurred while updating invoices in Holded: %s", e)
 
     def pay_holded_invoices(self):
         try:
@@ -150,7 +121,7 @@ class Invoice(models.Model):
                 odoo_invoices = self.env['holded_sync_odoo.odoo_invoices']
                 existing_invoices = odoo_invoices.search([])
                 existing_invoices.unlink()
-                for invoice_data in invoices_list :
+                for invoice_data in invoices_list:
                     invoice_info = {
                         "holded_id": invoice_data.get('id'),
                         "contactName": invoice_data.get('contactName'),
@@ -190,17 +161,8 @@ class Invoice(models.Model):
 
     def sync_invoices_button(self):
         try:
-            sync_products = self.env['holded_sync_odoo.odoo_products']
-            sync_products.insert_products()
-            sync_products.bring_products()
-
-            sync_customers = self.env['holded_sync_odoo.odoo_customers']
-            sync_customers.insert_customers()
-            sync_customers.bring_customers()
-
             self.bring_invoices_odoo()
             self.insert_holded_invoices()
-            # self.update_holded_invoices()
             self.update_invoices_odoo()
             self.pay_holded_invoices()
         except Exception as e:

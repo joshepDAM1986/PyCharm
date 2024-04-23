@@ -56,7 +56,17 @@ class Customer(models.Model):
                 "tags": tags
             }
 
-            holded_contact = next((contact for contact in holded_contacts if contact['code'] == odoo_customer.vat), None)
+            if odoo_customer._name == 'res.partner':
+                if odoo_customer.bank_ids:
+                    bank = odoo_customer.bank_ids[0]
+                    customer_data.update({
+                        "swift": bank.bank_id.bic or '',
+                        "iban": bank.acc_number or '',
+                        "bank_name": bank.bank_id.name or ''
+                    })
+
+            holded_contact = next((contact for contact in holded_contacts if contact['code'] == odoo_customer.vat),
+                                  None)
 
             if holded_contact:
                 url_update_holded_contact = f"https://api.holded.com/api/invoicing/v1/contacts/{holded_contact['id']}"
@@ -90,9 +100,9 @@ class Customer(models.Model):
             holded_contacts = response.json()
 
             odoo_customers = self.env['res.partner'].search([])
-
             for odoo_customer in odoo_customers:
                 self.insert_or_update_customer(odoo_customer, holded_contacts)
+
         except Exception as e:
             _logger.error("An error occurred while inserting customers in Holded: %s", e)
 

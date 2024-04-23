@@ -27,7 +27,6 @@
                     <field name="name"/>
                     <field name="purchasePrice"/>
                     <field name="price"/>
-                    <field name="total"/>
                     <field name="barcode"/>
                 </tree>
             </field>
