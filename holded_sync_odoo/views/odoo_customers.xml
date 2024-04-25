@@ -34,7 +34,7 @@
                     <field name="province"/>
                     <field name="country"/>
                     <field name="countryCode"/>
-                     <field name="tags" widget="customer_tags_widget"/>
+                    <field name="tags" widget="customer_tags_widget"/>
                 </tree>
             </field>
         </record>
@@ -55,7 +55,20 @@
                 <form>
                     <sheet>
                         <group>
-
+                            <field name="holded_id" readonly="1"/>
+                            <field name="name" readonly="1"/>
+                            <field name="code" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                            <field name="website" readonly="1"/>
+                            <field name="phone" readonly="1"/>
+                            <field name="mobile" readonly="1"/>
+                            <field name="address" readonly="1"/>
+                            <field name="city" readonly="1"/>
+                            <field name="postalCode" readonly="1"/>
+                            <field name="province" readonly="1"/>
+                            <field name="country" readonly="1"/>
+                            <field name="countryCode" readonly="1"/>
+                            <field name="tags" widget="customer_tags_widget" readonly="1"/>
                         </group>
                         <notebook>
 

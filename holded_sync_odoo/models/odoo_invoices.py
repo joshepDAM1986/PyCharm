@@ -31,13 +31,15 @@ class Invoice(models.Model):
             for odoo_invoice in batch_invoices:
                 if (odoo_invoice.state != "draft"
                         and odoo_invoice.move_type != "entry"
-                        and odoo_invoice.move_type == "out_invoice") :
+                        and odoo_invoice.move_type == "out_invoice"):
                     url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
+
                     headers = {
                         "accept": "application/json",
                         "content-type": "application/json",
                         "key": "cf6626233fa4b33a99aa841dd37a11a9"
                     }
+
                     contact_code = odoo_invoice.partner_id.vat
                     invoice_datetime = datetime.combine(odoo_invoice.invoice_date or fields.Date.today(),
                                                         datetime.min.time())
@@ -45,6 +47,7 @@ class Invoice(models.Model):
                                                            datetime.min.time())
                     timestamp_date = int(invoice_datetime.timestamp())
                     timestamp_datedue = int(invoice_dateduetime.timestamp())
+
                     invoice_data = {
                         "invoiceNum": odoo_invoice.name,
                         "contactCode": contact_code,
@@ -52,9 +55,14 @@ class Invoice(models.Model):
                         "dueDate": timestamp_datedue,
                         "items": [{
                             "units": line.quantity,
-                            "sku": line.product_id.default_code
+                            "sku": line.product_id.code,
+                            "subtotal": line.price_subtotal / line.quantity,
+                            "tax": int(line.tax_ids.amount),
                         } for line in odoo_invoice.invoice_line_ids],
                     }
+
+                    _logger.info("Info sent to holded: %s", invoice_data)
+
                     holded_invoice_exists = self.env['holded_sync_odoo.odoo_invoices'].search([
                         ('invoiceNum', '=', odoo_invoice.name)
                     ])
@@ -118,9 +126,11 @@ class Invoice(models.Model):
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 invoices_list = response.json()
+
                 odoo_invoices = self.env['holded_sync_odoo.odoo_invoices'].search([])
                 existing_invoices = odoo_invoices
                 existing_invoices.unlink()
+
                 for invoice_data in invoices_list:
                     invoice_info = {
                         "holded_id": invoice_data.get('id'),
@@ -142,6 +152,7 @@ class Invoice(models.Model):
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 invoices_list = response.json()
+
                 odoo_invoices = self.env['holded_sync_odoo.odoo_invoices'].search([])
                 for invoice_data in invoices_list:
 
@@ -151,6 +162,7 @@ class Invoice(models.Model):
                         "invoiceNum": invoice_data.get('docNumber'),
                         "holded_payment_state": invoice_data.get("status"),
                     }
+
                     invoice_exist = odoo_invoices.filtered(lambda i: i.invoiceNum == invoice_data.get('docNumber'))
                     if not invoice_exist:
                         self.env['holded_sync_odoo.odoo_invoices'].create(invoice_info)

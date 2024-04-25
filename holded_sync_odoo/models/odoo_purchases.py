@@ -47,6 +47,7 @@ class Purchase(models.Model):
                                                             datetime.min.time())
                     timestamp_date = int(purchase_datetime.timestamp())
                     timestamp_datedue = int(purchase_dateduetime.timestamp())
+
                     purchase_data = {
                         "invoiceNum": odoo_purchase.name,
                         "contactCode": contact_code,
@@ -54,9 +55,14 @@ class Purchase(models.Model):
                         "dueDate": timestamp_datedue,
                         "items": [{
                             "units": line.quantity,
-                            "sku": line.product_id.default_code,
+                            "sku": line.product_id.code,
+                            "subtotal": line.price_subtotal / line.quantity,
+                            "tax": int(line.tax_ids.amount),
                         } for line in odoo_purchase.invoice_line_ids],
                     }
+
+                    _logger.info("Info sent to holded: %s", purchase_data)
+
                     holded_purchase_exists = self.env['holded_sync_odoo.odoo_purchases'].search([
                         ('invoiceNum', '=', odoo_purchase.name)
                     ])
@@ -73,15 +79,16 @@ class Purchase(models.Model):
 
     def pay_holded_purchases(self):
         try:
-            odoo_paid_purchases = self.env['account.move'].search([('payment_state', '=', 'paid')])
+            odoo_paid_purchases = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
 
             for odoo_purchase in odoo_paid_purchases:
                 holded_purchase = self.env['holded_sync_odoo.odoo_purchases'].search(
                     [('invoiceNum', '=', odoo_purchase.name)])
 
-                if holded_purchase and holded_purchase.holded_payment_state != '1':
+                if holded_purchase and holded_purchase.holded_payment_state != '1':  # Verificar que no esté ya pagada en Holded
                     holded_id = holded_purchase.holded_id
-                    amount = odoo_purchase.amount_total
+                    amount_paid = odoo_purchase.amount_total - odoo_purchase.amount_residual
+                    amount_pending = odoo_purchase.amount_residual
                     purchase_datetime = datetime.combine(odoo_purchase.create_date or fields.Date.today(),
                                                          datetime.min.time())
                     timestamp_date = int(purchase_datetime.timestamp())
@@ -95,7 +102,7 @@ class Purchase(models.Model):
                     }
 
                     purchase_data = {
-                        "amount": amount,
+                        "amount": amount_paid,
                         "date": timestamp_date,
                     }
 
@@ -103,7 +110,12 @@ class Purchase(models.Model):
 
                     if response.status_code == 200:
                         _logger.info(f"Purchase {holded_id} successfully paid in Holded")
-                        holded_purchase.write({'holded_payment_state': '1'})
+                        if amount_pending > 0:
+                            holded_purchase.write(
+                                {'holded_payment_state': '2'})
+                        else:
+                            holded_purchase.write(
+                                {'holded_payment_state': '1'})
                     else:
                         _logger.error(f"Error paying purchase {holded_id} in Holded: {response.text}")
 

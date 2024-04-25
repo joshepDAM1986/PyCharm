@@ -45,7 +45,10 @@
                 <form>
                     <sheet>
                         <group>
-
+                            <field name="holded_id" readonly="1"/>
+                            <field name="contactName" readonly="1"/>
+                            <field name="invoiceNum" readonly="1"/>
+                            <field name="holded_payment_state" readonly="1"/>
                         </group>
                         <notebook>
 

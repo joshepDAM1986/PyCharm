@@ -48,7 +48,13 @@
                 <form>
                     <sheet>
                         <group>
-
+                            <field name="holded_id" readonly="1"/>
+                            <field name="sku" readonly="1"/>
+                            <field name="kind" readonly="1"/>
+                            <field name="name" readonly="1"/>
+                            <field name="purchasePrice" readonly="1"/>
+                            <field name="price" readonly="1"/>
+                            <field name="barcode" readonly="1"/>
                         </group>
                         <notebook>
 
