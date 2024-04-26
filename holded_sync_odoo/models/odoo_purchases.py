@@ -1,4 +1,3 @@
-
 from odoo import models, fields
 from datetime import datetime
 import requests
@@ -27,14 +26,13 @@ class Purchase(models.Model):
         except Exception as e:
             _logger.error("An error occurred while inserting purchases into Holded: %s", e)
 
-    def process_batch(self, batch_purchases):
+    def process_batch(self, batch_purchases ):
         try:
             for odoo_purchase in batch_purchases:
                 if (odoo_purchase.state != "draft"
                         and odoo_purchase.move_type != "entry"
                         and odoo_purchase.move_type == "in_invoice"):
-                    url = "https://api.holded.com/api/invoicing/v1/documents/purchase"
-
+                    url = f"https://api.holded.com/api/invoicing/v1/documents/purchase"
                     headers = {
                         "accept": "application/json",
                         "content-type": "application/json",
@@ -57,7 +55,7 @@ class Purchase(models.Model):
                             "units": line.quantity,
                             "sku": line.product_id.code,
                             "subtotal": line.price_subtotal / line.quantity,
-                            "tax": int(line.tax_ids.amount),
+                            "tax": sum(tax.amount for tax in line.tax_ids)
                         } for line in odoo_purchase.invoice_line_ids],
                     }
 

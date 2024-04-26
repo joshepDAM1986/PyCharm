@@ -57,7 +57,7 @@ class Invoice(models.Model):
                             "units": line.quantity,
                             "sku": line.product_id.code,
                             "subtotal": line.price_subtotal / line.quantity,
-                            "tax": int(line.tax_ids.amount),
+                            "tax": sum(tax.amount for tax in line.tax_ids)
                         } for line in odoo_invoice.invoice_line_ids],
                     }
 

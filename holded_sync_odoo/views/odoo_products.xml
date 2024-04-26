@@ -11,9 +11,9 @@
             </field>
         </record>
 
-        <menuitem id="odoo_products_menu" name="Odoo Products"
-                  parent="main_holded_sync_odoo_menu"
-                  action="odoo_products_list_action"/>
+<!--        <menuitem id="odoo_products_menu" name="Odoo Products"-->
+<!--                  parent="main_holded_sync_odoo_menu"-->
+<!--                  action="odoo_products_list_action"/>-->
 
         <record id="view_odoo_products_tree" model="ir.ui.view">
             <field name="name">odoo_products.tree</field>
@@ -63,6 +63,10 @@
                 </form>
             </field>
         </record>
+
+        <menuitem id="main_holded_sync_odoo_menu" name="Holded Sync Odoo" action="odoo_products_list_action"/>
+        <menuitem id="odoo_products_menu" name="Odoo Products" parent="main_holded_sync_odoo_menu" action="odoo_products_list_action"/>
+
 
     </data>
 </odoo>
