@@ -79,7 +79,7 @@ class Invoice(models.Model):
 
     def pay_holded_invoices(self):
         try:
-            odoo_paid_invoices = self.env['account.move'].search([('payment_state', '=', 'paid')])
+            odoo_paid_invoices = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
 
             for odoo_invoice in odoo_paid_invoices:
                 holded_invoice = self.env['holded_sync_odoo.odoo_invoices'].search(
@@ -87,7 +87,8 @@ class Invoice(models.Model):
 
                 if holded_invoice and holded_invoice.holded_payment_state != '1':
                     holded_id = holded_invoice.holded_id
-                    amount = odoo_invoice.amount_total
+                    amount_paid = odoo_invoice.amount_total - odoo_invoice.amount_residual
+                    amount_pemding = odoo_invoice.amount_residual
                     invoice_datetime = datetime.combine(odoo_invoice.create_date or fields.Date.today(),
                                                         datetime.min.time())
                     timestamp_date = int(invoice_datetime.timestamp())
@@ -101,7 +102,7 @@ class Invoice(models.Model):
                     }
 
                     invoice_data = {
-                        "amount": amount,
+                        "amount": amount_paid,
                         "date": timestamp_date,
                     }
 
@@ -109,7 +110,10 @@ class Invoice(models.Model):
 
                     if response.status_code == 200:
                         _logger.info(f"Invoice {holded_id} successfully paid in Holded")
-                        holded_invoice.write({'holded_payment_state': '1'})
+                        if amount_pemding > 0:
+                            holded_invoice.write({'holded_payment_state': '2'})
+                        else:
+                            holded_invoice.write({'holded_payment_state': '1'})
                     else:
                         _logger.error(f"Error paying invoice {holded_id} in Holded: {response.text}")
 

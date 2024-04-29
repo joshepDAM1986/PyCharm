@@ -83,7 +83,7 @@ class Purchase(models.Model):
                 holded_purchase = self.env['holded_sync_odoo.odoo_purchases'].search(
                     [('invoiceNum', '=', odoo_purchase.name)])
 
-                if holded_purchase and holded_purchase.holded_payment_state != '1':  # Verificar que no esté ya pagada en Holded
+                if holded_purchase and holded_purchase.holded_payment_state != '1':
                     holded_id = holded_purchase.holded_id
                     amount_paid = odoo_purchase.amount_total - odoo_purchase.amount_residual
                     amount_pending = odoo_purchase.amount_residual
@@ -109,11 +109,9 @@ class Purchase(models.Model):
                     if response.status_code == 200:
                         _logger.info(f"Purchase {holded_id} successfully paid in Holded")
                         if amount_pending > 0:
-                            holded_purchase.write(
-                                {'holded_payment_state': '2'})
+                            holded_purchase.write({'holded_payment_state': '2'})
                         else:
-                            holded_purchase.write(
-                                {'holded_payment_state': '1'})
+                            holded_purchase.write({'holded_payment_state': '1'})
                     else:
                         _logger.error(f"Error paying purchase {holded_id} in Holded: {response.text}")
 
