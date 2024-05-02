@@ -14,9 +14,11 @@ class Purchase(models.Model):
     invoiceNum = fields.Char(string='Purchase Num')
     contactName = fields.Char(string='Supplier Name')
     holded_payment_state = fields.Char(string='Payment State')
+    holded_residual_payment = fields.Float(string='Residual Payment')
 
     def insert_holded_purchases(self):
         try:
+            self.bring_purchases_odoo()
             odoo_purchases = self.env['account.move'].search([])
             batch_size = 100
             total_purchases = len(odoo_purchases)
@@ -83,7 +85,9 @@ class Purchase(models.Model):
                 holded_purchase = self.env['holded_sync_odoo.odoo_purchases'].search(
                     [('invoiceNum', '=', odoo_purchase.name)])
 
-                if holded_purchase and holded_purchase.holded_payment_state != '1':
+                if (holded_purchase
+                        and holded_purchase.holded_payment_state != '1'
+                        and holded_purchase.holded_payment_state != '2'):
                     holded_id = holded_purchase.holded_id
                     amount_paid = odoo_purchase.amount_total - odoo_purchase.amount_residual
                     amount_pending = odoo_purchase.amount_residual
@@ -114,7 +118,7 @@ class Purchase(models.Model):
                             holded_purchase.write({'holded_payment_state': '1'})
                     else:
                         _logger.error(f"Error paying purchase {holded_id} in Holded: {response.text}")
-
+                self.bring_purchases_odoo()
         except Exception as e:
             _logger.error(f"An error occurred while paying purchases in Holded: {e}")
 
@@ -142,38 +146,10 @@ class Purchase(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing purchases from Holded to Odoo: %s", e)
 
-    def update_purchases_odoo(self):
-        try:
-            url = "https://api.holded.com/api/invoicing/v1/documents/purchase"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                purchases_list = response.json()
-                odoo_purchases = self.env['holded_sync_odoo.odoo_purchases'].search([])
-                for purchase_data in purchases_list:
-
-                    purchase_info = {
-                        "holded_id": purchase_data.get('id'),
-                        "contactName": purchase_data.get('contactName'),
-                        "invoiceNum": purchase_data.get('docNumber'),
-                        "holded_payment_state": purchase_data.get("status"),
-                    }
-                    purchase_exist = odoo_purchases.filtered(lambda p: p.invoiceNum == purchase_data.get('docNumber'))
-                    if not purchase_exist:
-                        self.env['holded_sync_odoo.odoo_purchases'].create(purchase_info)
-                    else:
-                        purchase_exist.write(purchase_info)
-        except Exception as e:
-            _logger.error("An error occurred while updating purchases from Holded to Odoo: %s", e)
-
     def sync_purchases_button(self):
         try:
             self.bring_purchases_odoo()
             self.insert_holded_purchases()
-            self.update_purchases_odoo()
             self.pay_holded_purchases()
         except Exception as e:
             _logger.error("An error occurred while syncing purchases: %s", e)

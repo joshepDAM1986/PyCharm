@@ -17,6 +17,7 @@
         'views/odoo_customers.xml',
         'views/odoo_invoices.xml',
         'views/odoo_purchases.xml',
+        'views/odoo_payments.xml',
     ],
     'demo': [
         'demo/demo.xml',

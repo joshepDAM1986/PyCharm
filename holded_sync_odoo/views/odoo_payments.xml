@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Acción de ventana para listar los pagos -->
+        <record model="ir.actions.act_window" id="odoo_payments_list_action">
+            <field name="name">Sync Payments</field>
+            <field name="res_model">holded_sync_odoo.odoo_payments</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">New Payment</p>
+            </field>
+            <field name="context">{'button_sync_visible': True}</field>
+        </record>
+
+        <!-- Elemento de menú para acceder a los pagos desde el menú principal -->
+        <menuitem id="odoo_payments_menu" name="Odoo Payments"
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_payments_list_action"/>
+
+        <!-- Vista de árbol para mostrar los pagos -->
+        <record id="view_odoo_payments_tree" model="ir.ui.view">
+            <field name="name">odoo_payments.tree</field>
+            <field name="model">holded_sync_odoo.odoo_payments</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <button name="sync_payments_button" string="Synchronize" type="object" class="btn-primary"/>
+                    <field name="holded_id"/>
+                    <field name="contact_id"/>
+                    <field name="contact_name"/>
+                    <field name="amount"/>
+                    <field name="desc"/>
+                    <field name="date"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Vista de búsqueda para los pagos -->
+        <record model="ir.ui.view" id="view_odoo_payments_search">
+            <field name="name">odoo_payments.search</field>
+            <field name="model">holded_sync_odoo.odoo_payments</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <!-- Vista de formulario para mostrar los detalles de los pagos -->
+        <record id="view_sync_payment_form" model="ir.ui.view">
+            <field name="name">odoo_payments.form</field>
+            <field name="model">holded_sync_odoo.odoo_payments</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+
+                        </group>
+                        <!-- Aquí puedes agregar más campos si es necesario -->
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
