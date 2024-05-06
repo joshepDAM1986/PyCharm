@@ -36,25 +36,21 @@ class Payment(models.Model):
                 payments_list = response.json()
 
                 odoo_payments = self.env['holded_sync_odoo.odoo_payments']
-
-                # Eliminar todos los registros existentes en Odoo antes de insertar los nuevos
                 odoo_payments.search([]).unlink()
 
                 for payment_data in payments_list:
-                    timestamp = payment_data.get("date")  # Obtener el tiempo Unix del pago
+                    timestamp = payment_data.get("date")
 
                     if timestamp:
-                        # Convertir el tiempo Unix a un objeto de fecha y hora
                         payment_date = datetime.utcfromtimestamp(timestamp)
 
-                        # Crear un nuevo registro en Odoo con la fecha convertida
                         odoo_payment = {
                             "holded_id": payment_data.get('id'),
                             "contact_id": payment_data.get('contactId'),
                             "contact_name": payment_data.get('contactName'),
                             "amount": payment_data.get("amount"),
                             "desc": payment_data.get("desc"),
-                            "date": payment_date.date()  # Utilizar solo la parte de la fecha (sin la hora)
+                            "date": payment_date.date()
                         }
 
                         self.env['holded_sync_odoo.odoo_payments'].create(odoo_payment)

@@ -86,8 +86,8 @@ class Purchase(models.Model):
                     [('invoiceNum', '=', odoo_purchase.name)])
 
                 if (holded_purchase
-                        and holded_purchase.holded_payment_state != '1'
-                        and holded_purchase.holded_payment_state != '2'):
+                        and holded_purchase.holded_payment_state != '1'):
+                        # and holded_purchase.holded_payment_state != '2'):
                     holded_id = holded_purchase.holded_id
                     amount_paid = odoo_purchase.amount_total - odoo_purchase.amount_residual
                     amount_pending = odoo_purchase.amount_residual
@@ -148,7 +148,6 @@ class Purchase(models.Model):
 
     def sync_purchases_button(self):
         try:
-            self.bring_purchases_odoo()
             self.insert_holded_purchases()
             self.pay_holded_purchases()
         except Exception as e:

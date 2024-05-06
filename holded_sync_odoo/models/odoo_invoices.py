@@ -5,6 +5,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class Invoice(models.Model):
     _name = 'holded_sync_odoo.odoo_invoices'
     _description = 'Odoo internal invoices to be synchronized and exported to Holded ERP'
@@ -75,111 +76,61 @@ class Invoice(models.Model):
                             _logger.error("Error inserting invoice %s in Holded: %s", odoo_invoice.id, response.text)
                     else:
                         _logger.info("Invoice %s already exists in Holded, skipping insertion", odoo_invoice.name)
+            self.bring_invoices_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
     def pay_holded_invoices(self):
         try:
-            for i in self.env['account.move'].search([]):
-                _logger.info("INFO SENT: %s - %s" % (i.name, i.ref))
+            odoo_invoices = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
 
-            odoo_paid_invoices = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
-
-            for odoo_invoice in odoo_paid_invoices:
-                holded_invoice = self.env['holded_sync_odoo.odoo_invoices'].search(
+            for odoo_invoice in odoo_invoices:
+                holded_invoices = self.env['holded_sync_odoo.odoo_invoices'].search(
                     [('invoiceNum', '=', odoo_invoice.name)])
 
-                if (holded_invoice
-                        and holded_invoice.holded_payment_state != '1'):
-                        # and holded_invoice.holded_payment_state != '2'):
-                    holded_id = holded_invoice.holded_id
-                    amount_paid = odoo_invoice.amount_total - odoo_invoice.amount_residual
-                    amount_pending = odoo_invoice.amount_residual
-                    invoice_datetime = datetime.combine(odoo_invoice.create_date or fields.Date.today(),
-                                                        datetime.min.time())
-                    timestamp_date = int(invoice_datetime.timestamp())
+                for holded_invoice in holded_invoices:
+                    if holded_invoice.holded_payment_state != '1':
+                        holded_id = holded_invoice.holded_id
 
-                    url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_id}/pay"
+                        # Procesar pagos asociados a la factura de Odoo
+                        odoo_payments = self.env['account.payment'].search(
+                            [('ref', '=', odoo_invoice.payment_reference)])
 
-                    headers = {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                    }
+                        for odoo_payment in odoo_payments:
+                            amount_paid = odoo_payment.amount
+                            invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
+                                                                datetime.min.time())
+                            timestamp_date = int(invoice_datetime.timestamp())
 
-                    invoice_data = {
-                        "amount": amount_paid,
-                        "date": timestamp_date,
-                    }
+                            # Realizar operaciones en Holded para registrar el pago
+                            url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_id}/pay"
+                            headers = {
+                                "accept": "application/json",
+                                "content-type": "application/json",
+                                "key": "cf6626233fa4b33a99aa841dd37a11a9"
+                            }
 
-                    response = requests.post(url, json=invoice_data, headers=headers)
+                            invoice_data = {
+                                "amount": amount_paid,
+                                "date": timestamp_date
+                            }
 
-                    if response.status_code == 200:
-                        _logger.info(f"Invoice {holded_id} successfully paid in Holded")
-                        if amount_pending > 0:
-                            holded_invoice.write({'holded_payment_state': '2'})
-                        else:
-                            holded_invoice.write({'holded_payment_state': '1'})
-                    else:
-                        _logger.error(f"Error paying invoice {holded_id} in Holded: {response.text}")
-                else:
-                    _logger.info("There are no new invoices to pay!!!!!")
+                            response = requests.post(url, json=invoice_data, headers=headers)
+
+                            if response.status_code == 200:
+                                _logger.info(
+                                    f"Payment {odoo_payment.id} successfully processed for Holded Invoice {holded_id}")
+                                # Actualizar estado en Holded después de un pago exitoso
+                                if odoo_invoice.amount_residual > 0:
+                                    holded_invoice.write({'holded_payment_state': '2'})
+                                else:
+                                    holded_invoice.write({'holded_payment_state': '1'})
+                            else:
+                                _logger.error(
+                                    f"Error processing payment {odoo_payment.id} for Holded Invoice {holded_id}: {response.text}")
             self.bring_invoices_odoo()
         except Exception as e:
-            _logger.error(f"An error occurred while paying invoices in Holded: {e}")
-
-    def pay_holded_partially_invoices(self):
-        try:
-            odoo_paid_invoices = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
-
-            for odoo_invoice in odoo_paid_invoices:
-                holded_invoice = self.env['holded_sync_odoo.odoo_invoices'].search(
-                    [('invoiceNum', '=', odoo_invoice.name)])
-
-                if holded_invoice and holded_invoice.holded_payment_state != '1':
-                    holded_id = holded_invoice.holded_id
-                    holded_residual_payment = holded_invoice.holded_residual_payment
-
-                    amount_residual_odoo = odoo_invoice.amount_residual
-
-                    if holded_residual_payment > amount_residual_odoo:
-                        amount_to_pay = holded_residual_payment - amount_residual_odoo
-
-                        invoice_datetime = datetime.combine(odoo_invoice.create_date or fields.Date.today(),
-                                                            datetime.min.time())
-                        timestamp_date = int(invoice_datetime.timestamp())
-
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_id}/pay"
-
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
-
-                        invoice_data = {
-                            "amount": amount_to_pay,
-                            "date": timestamp_date,
-                        }
-
-                        response = requests.post(url, json=invoice_data, headers=headers)
-
-                        if response.status_code == 200:
-                            _logger.info(f"Invoice {holded_id} successfully paid partially in Holded")
-
-                            if amount_residual_odoo == 0:
-                                holded_invoice.write({'holded_payment_state': '1'})
-                        else:
-                            _logger.error(f"Error paying invoice {holded_id} partially in Holded: {response.text}")
-                    else:
-                        _logger.info(f"Invoice {holded_id} does not receive new payments in Odoo")
-                else:
-                    _logger.info("There are no new invoices to pay!")
-
-            self.bring_invoices_odoo()
-
-        except Exception as e:
-            _logger.error(f"An error occurred while paying invoices partially in Holded: {e}")
+            _logger.error(f"An error occurred while processing payments in Holded: {e}")
 
     def bring_invoices_odoo(self):
         try:
@@ -212,6 +163,5 @@ class Invoice(models.Model):
         try:
             self.insert_holded_invoices()
             self.pay_holded_invoices()
-            # self.pay_holded_partially_invoices()
         except Exception as e:
             _logger.error("An error occurred while syncing invoices: %s", e)
