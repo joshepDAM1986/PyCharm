@@ -50,7 +50,7 @@
                             <field name="contactName" readonly="1"/>
                             <field name="invoiceNum" readonly="1"/>
                             <field name="holded_payment_state" readonly="1"/>
-                            <field name="holded_residual_payment" readonly="1"/>
+                            <field name="holded_residual_payment" readonly="1"/>/>
                         </group>
                         <notebook>
 
