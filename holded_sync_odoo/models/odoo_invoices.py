@@ -14,7 +14,9 @@ class Invoice(models.Model):
     invoiceNum = fields.Char(string='Invoice Number')
     contactName = fields.Char(string='Customer Name')
     holded_payment_state = fields.Char(string='Payment State')
-    holded_residual_payment = fields.Float(string='Residual Payment')
+    holded_amount_total = fields.Float(string="Total")
+    holded_payment_charged = fields.Float(string='Charged')
+    holded_residual_payment = fields.Float(string='Residual')
 
     def insert_holded_invoices(self):
         try:
@@ -139,12 +141,14 @@ class Invoice(models.Model):
                         if response.status_code == 200:
                             _logger.info(
                                 f"Payment {odoo_payment.id} successfully processed for Holded invoice {holded_id}")
+
                             new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
                                 'holded_id': holded_id,
                                 'amount': odoo_payment.amount,
                                 'date': odoo_payment.date,
                                 'processed_payment': 'Processed'
                             })
+
                         else:
                             _logger.error(
                                 f"Error processing payment {odoo_payment.id} "
@@ -177,6 +181,8 @@ class Invoice(models.Model):
                         "contactName": invoice_data.get('contactName'),
                         "invoiceNum": invoice_data.get('docNumber'),
                         "holded_payment_state": invoice_data.get("status"),
+                        "holded_amount_total": invoice_data.get("total"),
+                        "holded_payment_charged": invoice_data.get("paymentsTotal"),
                         "holded_residual_payment": invoice_data.get("paymentsPending")
                     }
 

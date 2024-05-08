@@ -62,7 +62,7 @@ class Customer(models.Model):
                     customer_data.update({
                         "swift": bank.bank_id.bic or '',
                         "iban": bank.acc_number or '',
-                        "bank_name": bank.bank_id.name or ''
+                        "name": bank.bank_id.name or '',
                     })
 
             holded_contact = next((contact for contact in holded_contacts if contact['code'] == odoo_customer.vat),

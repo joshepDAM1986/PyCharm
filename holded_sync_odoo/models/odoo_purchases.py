@@ -14,7 +14,9 @@ class Purchase(models.Model):
     invoiceNum = fields.Char(string='Purchase Num')
     contactName = fields.Char(string='Supplier Name')
     holded_payment_state = fields.Char(string='Payment State')
-    holded_residual_payment = fields.Float(string='Residual Payment')
+    holded_amount_total = fields.Float(string="Total")
+    holded_payment_charged = fields.Float(string='Charged')
+    holded_residual_payment = fields.Float(string='Residual')
 
     def insert_holded_purchases(self):
         try:
@@ -177,6 +179,8 @@ class Purchase(models.Model):
                         "contactName": purchase_data.get('contactName'),
                         "invoiceNum": purchase_data.get('docNumber'),
                         "holded_payment_state": purchase_data.get("status"),
+                        "holded_amount_total": purchase_data.get("total"),
+                        "holded_payment_charged": purchase_data.get("paymentsTotal"),
                         "holded_residual_payment": purchase_data.get("paymentsPending")
                     }
 

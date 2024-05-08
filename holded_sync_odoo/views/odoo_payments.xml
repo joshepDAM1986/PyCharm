@@ -13,10 +13,10 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-<!--        &lt;!&ndash; Elemento de menú para acceder a los pagos desde el menú principal &ndash;&gt;-->
-<!--        <menuitem id="odoo_payments_menu" name="Odoo Payments"-->
-<!--                  parent="main_holded_sync_odoo_menu"-->
-<!--                  action="odoo_payments_list_action"/>-->
+        <!-- Elemento de menú para acceder a los pagos desde el menú principal -->
+        <menuitem id="odoo_payments_menu" name="Odoo Payments"
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_payments_list_action"/>
 
         <!-- Vista de árbol para mostrar los pagos -->
         <record id="view_odoo_payments_tree" model="ir.ui.view">
@@ -24,7 +24,13 @@
             <field name="model">holded_sync_odoo.odoo_payments</field>
             <field name="arch" type="xml">
                 <tree>
-
+<!--                    <button name="sync_payments_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <field name="holded_id"/>
+<!--                    <field name="contact_id"/>-->
+<!--                    <field name="contact_name"/>-->
+                    <field name="amount"/>
+<!--                    <field name="desc"/>-->
+                    <field name="date"/>
                 </tree>
             </field>
         </record>
@@ -47,7 +53,12 @@
                 <form>
                     <sheet>
                         <group>
-
+                            <field name="holded_id" readonly="1"/>
+<!--                            <field name="contact_id" readonly="1"/>-->
+<!--                            <field name="contact_name" readonly="1"/>-->
+                            <field name="amount" readonly="1"/>
+<!--                            <field name="desc" readonly="1"/>-->
+                            <field name="date" readonly="1"/>
                         </group>
                         <!-- Aquí puedes agregar más campos si es necesario -->
                         <notebook>

@@ -25,6 +25,8 @@
                     <field name="contactName"/>
                     <field name="invoiceNum"/>
                     <field name="holded_payment_state"/>
+                    <field name="holded_amount_total"/>
+                    <field name="holded_payment_charged"/>
                     <field name="holded_residual_payment"/>
                 </tree>
             </field>
@@ -50,7 +52,9 @@
                             <field name="contactName" readonly="1"/>
                             <field name="invoiceNum" readonly="1"/>
                             <field name="holded_payment_state" readonly="1"/>
-                            <field name="holded_residual_payment" readonly="1"/>/>
+                            <field name="holded_amount_total" readonly="1"/>
+                            <field name="holded_payment_charged" readonly="1"/>
+                            <field name="holded_residual_payment" readonly="1"/>
                         </group>
                         <notebook>
 
