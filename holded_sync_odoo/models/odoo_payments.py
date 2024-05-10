@@ -8,7 +8,7 @@ class Payment(models.Model):
     _name = 'holded_sync_odoo.odoo_payments'
     _description = 'Odoo payments to be synchronized and exported to Holded ERP'
 
-    holded_id = fields.Char(string='Holded Payment ID')
+    holded_payment_id = fields.Char(string='Holded Payment ID')
     contact_id = fields.Char(string="Contact ID")
     contact_name = fields.Char(string='Contact Name')
     amount = fields.Float(string='Amount')

@@ -10,7 +10,7 @@ class Purchase(models.Model):
     _name = 'holded_sync_odoo.odoo_purchases'
     _description = 'Odoo internal purchases to be synchronized and exported to Holded ERP'
 
-    holded_id = fields.Char(string='Holded Purchase ID')
+    holded_purchase_id = fields.Char(string='Holded Purchase ID')
     invoiceNum = fields.Char(string='Purchase Num')
     contactName = fields.Char(string='Supplier Name')
     holded_payment_state = fields.Char(string='Payment State')
@@ -92,68 +92,73 @@ class Purchase(models.Model):
 
                 for holded_purchase in holded_purchases:
                     if holded_purchase.holded_payment_state == '1':
-                        # Si la factura en Holded ya está totalmente pagada, omitir el procesamiento
                         _logger.info("Holded purchase %s is already fully paid", holded_purchase.invoiceNum)
                         continue
 
-                    holded_id = holded_purchase.holded_id
+                    holded_url_id = holded_purchase.holded_purchase_id
 
-                    odoo_payments = self.env['account.payment'].search(
-                        [('ref', '=', odoo_purchase.name),
-                         ('state', '=', 'posted'),
-                         ('payment_type', '=', 'outbound'),
-                         ('partner_id.name', '=', odoo_purchase.partner_id.name)])
+                    holded_treasury = self.env['holded_sync_odoo.odoo_treasuries'].search(
+                        [('name', '=', odoo_purchase.partner_id.bank_ids.bank_name)], limit=1)
 
-                    for odoo_payment in odoo_payments:
-                        # Verificar si este pago ya ha sido procesado y registrado en Holded
-                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
-                            ('holded_id', '=', holded_id),
-                            ('amount', '=', odoo_payment.amount),
-                            ('date', '=', odoo_payment.date),
-                            ('processed_payment', '=', 'Processed')
-                        ])
+                    if holded_treasury:
+                        holded_payment_treasury_id = holded_treasury.holded_treasury_id
 
-                        if holded_payment_exists:
-                            _logger.info("Payment %s for Holded purchase %s already processed", odoo_payment.id,
-                                         holded_purchase.invoiceNum)
-                            continue
+                        odoo_payments = self.env['account.payment'].search(
+                            [('ref', '=', odoo_purchase.name),
+                             ('state', '=', 'posted'),
+                             ('payment_type', '=', 'outbound'),
+                             ('partner_id.name', '=', odoo_purchase.partner_id.name)])
 
-                        # Procesar el pago en Holded
-                        invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
-                                                            datetime.min.time())
-                        timestamp_date = int(invoice_datetime.timestamp())
+                        for odoo_payment in odoo_payments:
+                            holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
+                                ('holded_payment_id', '=', holded_url_id),
+                                ('amount', '=', odoo_payment.amount),
+                                ('date', '=', odoo_payment.date),
+                                ('processed_payment', '=', 'Processed')
+                            ])
 
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/purchase/{holded_id}/pay"
+                            if holded_payment_exists:
+                                _logger.info("Payment %s for Holded purchase %s already processed", odoo_payment.id,
+                                             holded_purchase.invoiceNum)
+                                continue
 
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
+                            invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
+                                                                datetime.min.time())
+                            timestamp_date = int(invoice_datetime.timestamp())
 
-                        purchase_data = {
-                            "amount": odoo_payment.amount,
-                            "date": timestamp_date,
-                        }
+                            url = f"https://api.holded.com/api/invoicing/v1/documents/purchase/{holded_url_id}/pay"
 
-                        response = requests.post(url, json=purchase_data, headers=headers)
+                            headers = {
+                                "accept": "application/json",
+                                "content-type": "application/json",
+                                "key": "cf6626233fa4b33a99aa841dd37a11a9"
+                            }
 
-                        if response.status_code == 200:
-                            _logger.info(
-                                f"Payment {odoo_payment.id} successfully processed for Holded purchase {holded_id}")
+                            purchase_data = {
+                                "amount": odoo_payment.amount,
+                                "date": timestamp_date,
+                                "treasury": holded_payment_treasury_id
+                            }
 
-                            new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                'holded_id': holded_id,
-                                'contact_name': odoo_purchase.partner_id.name,
-                                'amount': odoo_payment.amount,
-                                'date': odoo_payment.date,
-                                'processed_payment': 'Processed'
-                            })
-                        else:
-                            _logger.error(
-                                f"Error processing payment {odoo_payment.id} "
-                                f"for Holded purchase: {holded_id}: "
-                                f"{response.text}")
+                            response = requests.post(url, json=purchase_data, headers=headers)
+
+                            if response.status_code == 200:
+                                _logger.info(
+                                    f"Payment {odoo_payment.id} successfully processed for Holded purchase {holded_url_id}")
+
+                                new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
+                                    'holded_payment_id': holded_url_id,
+                                    'treasury': holded_payment_treasury_id,
+                                    'contact_name': odoo_purchase.partner_id.name,
+                                    'amount': odoo_payment.amount,
+                                    'date': odoo_payment.date,
+                                    'processed_payment': 'Processed'
+                                })
+                            else:
+                                _logger.error(
+                                    f"Error processing payment {odoo_payment.id} "
+                                    f"for Holded purchase: {holded_url_id}: "
+                                    f"{response.text}")
 
             self.bring_purchases_odoo()
 
@@ -176,7 +181,7 @@ class Purchase(models.Model):
 
                 for purchase_data in purchases_list:
                     purchase_info = {
-                        "holded_id": purchase_data.get('id'),
+                        "holded_purchase_id": purchase_data.get('id'),
                         "contactName": purchase_data.get('contactName'),
                         "invoiceNum": purchase_data.get('docNumber'),
                         "holded_payment_state": purchase_data.get("status"),

@@ -21,7 +21,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>
-                    <field name="holded_id"/>
+                    <field name="holded_invoice_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>
                     <field name="holded_payment_state"/>
@@ -48,7 +48,7 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="holded_id" readonly="1"/>
+                            <field name="holded_invoice_id" readonly="1"/>
                             <field name="contactName" readonly="1"/>
                             <field name="invoiceNum" readonly="1"/>
                             <field name="holded_payment_state" readonly="1"/>
