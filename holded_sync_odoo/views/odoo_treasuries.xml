@@ -21,7 +21,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <button name="sync_treasuries_button" string="Synchronize" type="object" class="btn-primary"/>
-                    <field name="holded_id"/>
+                    <field name="holded_treasury_id"/>
                     <field name="name"/>
                     <field name="bic"/>
                     <field name="acc_number"/>
@@ -45,7 +45,7 @@
                 <form>
                     <sheet>
                         <group>
-                             <field name="holded_id" readonly="1"/>
+                             <field name="holded_treasury_id" readonly="1"/>
                              <field name="name" readonly="1"/>
                              <field name="bic" readonly="1"/>
                              <field name="acc_number" readonly="1"/>

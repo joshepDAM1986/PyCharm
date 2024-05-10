@@ -8,7 +8,7 @@ class Customer(models.Model):
     _name = 'holded_sync_odoo.odoo_customers'
     _description = 'Odoo internal customers to be synchronized and exported to Holded ERP'
 
-    holded_id = fields.Char(string='Holded ID')
+    holded_customer_id = fields.Char(string='Holded Customer ID')
     name = fields.Char(string='Name')
     code = fields.Char(string='Customer Code')
     email = fields.Char(string='Email')
@@ -58,12 +58,11 @@ class Customer(models.Model):
 
             if odoo_customer._name == 'res.partner':
                 if odoo_customer.bank_ids:
-                    bank = odoo_customer.bank_ids[0]
-                    customer_data.update({
-                        "swift": bank.bank_id.bic or '',
-                        "iban": bank.acc_number or '',
-                        "name": bank.bank_id.name or '',
-                    })
+                    for bank in odoo_customer.bank_ids:
+                        customer_data.update({
+                            "swift": bank.bank_id.bic or '',
+                            "iban": bank.acc_number or '',
+                        })
 
             holded_contact = next((contact for contact in holded_contacts if contact['code'] == odoo_customer.vat),
                                   None)
@@ -80,7 +79,7 @@ class Customer(models.Model):
                 response = requests.post(url_create_holded_contact, headers=headers, json=customer_data)
                 if response.status_code == 200:
                     holded_customer_id = response.json().get('id')
-                    odoo_customer.write({'holded_id': holded_customer_id})
+                    odoo_customer.write({'holded_customer_id': holded_customer_id})
                     _logger.info("Created customer in Holded: %s", customer_data)
                 else:
                     _logger.error("Error while creating customer in Holded: %s", response.text)
@@ -121,7 +120,7 @@ class Customer(models.Model):
 
                 for customer_data in customers_list:
                     customer_info = {
-                        "holded_id": customer_data.get('id'),
+                        "holded_customer_id": customer_data.get('id'),
                         "name": customer_data.get('name'),
                         "code": customer_data.get('code'),
                         "email": customer_data.get('email'),

@@ -21,7 +21,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <button name="sync_products_button" string="Synchronize" type="object" class="btn-primary"/>
-                    <field name="holded_id"/>
+                    <field name="holded_product_id"/>
                     <field name="sku"/>
                     <field name="kind"/>
                     <field name="name"/>
@@ -48,7 +48,7 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="holded_id" readonly="1"/>
+                            <field name="holded_product_id" readonly="1"/>
                             <field name="sku" readonly="1"/>
                             <field name="kind" readonly="1"/>
                             <field name="name" readonly="1"/>

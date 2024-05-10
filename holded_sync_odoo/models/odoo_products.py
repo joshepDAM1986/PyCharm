@@ -8,7 +8,7 @@ class Product(models.Model):
     _name = 'holded_sync_odoo.odoo_products'
     _description = 'Odoo internal products to be synchronized and exported to Holded ERP'
 
-    holded_id = fields.Char(string='Holded ID')
+    holded_product_id = fields.Char(string='Holded Product ID')
     sku = fields.Char(string='SKU')
     kind = fields.Char(string='Kind')
     name = fields.Char(string='Name')
@@ -50,7 +50,7 @@ class Product(models.Model):
                 response = requests.post(url_create_holded_product, headers=headers, json=product_data)
                 if response.status_code == 200:
                     holded_product_id = response.json().get('id')
-                    odoo_product.write({'holded_id': holded_product_id})
+                    odoo_product.write({'holded_product_id': holded_product_id})
                     _logger.info("Created product in Holded: %s", product_data)
                 else:
                     _logger.error("Error while creating product in Holded: %s", response.text)
@@ -91,7 +91,7 @@ class Product(models.Model):
 
                 for product_data in product_list:
                     product_info = {
-                        "holded_id": product_data.get('id'),
+                        "holded_product_id": product_data.get('id'),
                         "sku": product_data.get('sku'),
                         "kind": "simple",
                         "name": product_data.get('name'),

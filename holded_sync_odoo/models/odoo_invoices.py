@@ -47,9 +47,9 @@ class Invoice(models.Model):
                     contact_code = odoo_invoice.partner_id.vat
                     invoice_datetime = datetime.combine(odoo_invoice.invoice_date or fields.Date.today(),
                                                         datetime.min.time())
+                    timestamp_date = int(invoice_datetime.timestamp())
                     invoice_dateduetime = datetime.combine(odoo_invoice.invoice_date_due or fields.Date.today(),
                                                            datetime.min.time())
-                    timestamp_date = int(invoice_datetime.timestamp())
                     timestamp_datedue = int(invoice_dateduetime.timestamp())
 
                     invoice_data = {
@@ -144,6 +144,7 @@ class Invoice(models.Model):
 
                             new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
                                 'holded_id': holded_id,
+                                'contact_name': odoo_invoice.partner_id.name,
                                 'amount': odoo_payment.amount,
                                 'date': odoo_payment.date,
                                 'processed_payment': 'Processed'

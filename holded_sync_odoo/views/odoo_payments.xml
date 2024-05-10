@@ -26,8 +26,9 @@
                 <tree>
 <!--                    <button name="sync_payments_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_id"/>
+                    <field name="treasury"/>
 <!--                    <field name="contact_id"/>-->
-<!--                    <field name="contact_name"/>-->
+                    <field name="contact_name"/>
                     <field name="amount"/>
 <!--                    <field name="desc"/>-->
                     <field name="date"/>
@@ -54,8 +55,9 @@
                     <sheet>
                         <group>
                             <field name="holded_id" readonly="1"/>
+                            <field name="treasury" readonly="1"/>
 <!--                            <field name="contact_id" readonly="1"/>-->
-<!--                            <field name="contact_name" readonly="1"/>-->
+                            <field name="contact_name" readonly="1"/>
                             <field name="amount" readonly="1"/>
 <!--                            <field name="desc" readonly="1"/>-->
                             <field name="date" readonly="1"/>

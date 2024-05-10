@@ -9,7 +9,7 @@ class Treasury(models.Model):
     _name = 'holded_sync_odoo.odoo_treasuries'
     _description = 'Odoo internal treasuries to be synchronized and exported to Holded ERP'
 
-    holded_id = fields.Char(string='Holded ID')
+    holded_treasury_id = fields.Char(string='Holded Treasury ID')
     name = fields.Char(string='Bank Name',)
     bic = fields.Char(string='BIC/SWIFT')
     acc_number = fields.Char(string='IBAN',)
@@ -50,7 +50,7 @@ class Treasury(models.Model):
                 response = requests.post(url_create_holded_treasury, headers=headers, json=treasury_data)
                 if response.status_code == 200:
                     holded_treasury_id = response.json().get('id')
-                    odoo_treasury.write({'holded_id': holded_treasury_id})
+                    odoo_treasury.write({'holded_treasury_id': holded_treasury_id})
                     _logger.info("Created treasury in Holded: %s", treasury_data)
                 else:
                     _logger.error("Error while creating treasury in Holded: %s", response.text)
@@ -76,7 +76,6 @@ class Treasury(models.Model):
         except Exception as e:
             _logger.error("An error occurred while inserting treasuries in Holded: %s", e)
 
-
     def bring_treasuries(self):
         try:
             url = "https://api.holded.com/api/invoicing/v1/treasury"
@@ -93,7 +92,7 @@ class Treasury(models.Model):
                 for treasury_data in holded_treasuries:
                     treasury_exist = odoo_treasuries.filtered(lambda t: t.name == treasury_data.get('name'))
                     treasury_info = {
-                        "holded_id": treasury_data.get('id'),
+                        "holded_treasury_id": treasury_data.get('id'),
                         "name": treasury_data.get('name'),
                         "acc_number": treasury_data.get('iban'),
                         "bic": treasury_data.get('swift'),
