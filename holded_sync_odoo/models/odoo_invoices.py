@@ -2,6 +2,7 @@ from odoo import models, fields
 from datetime import datetime
 import requests
 import logging
+import time
 
 _logger = logging.getLogger(__name__)
 
@@ -86,7 +87,20 @@ class Invoice(models.Model):
         try:
             odoo_invoices = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
 
-            for odoo_invoice in odoo_invoices:
+            batch_size = 100
+            total_invoices = len(odoo_invoices)
+            for index in range(0, total_invoices, batch_size):
+                batch_invoices = odoo_invoices[index:index + batch_size]
+                self.process_payment_batch(batch_invoices)
+
+            self.bring_invoices_odoo()
+
+        except Exception as e:
+            _logger.error(f"An error occurred while processing payments in Holded: {e}")
+
+    def process_payment_batch(self, batch_invoices):
+        try:
+            for odoo_invoice in batch_invoices:
                 holded_invoices = self.env['holded_sync_odoo.odoo_invoices'].search(
                     [('invoiceNum', '=', odoo_invoice.name)])
 
@@ -118,8 +132,8 @@ class Invoice(models.Model):
                             ])
 
                             if holded_payment_exists:
-                                _logger.info("Payment %s for Holded invoice %s already processed",
-                                             odoo_payment.id, holded_invoice.invoiceNum)
+                                _logger.info("Payment %s for Holded invoice %s already processed", odoo_payment.id,
+                                             holded_invoice.invoiceNum)
                                 continue
 
                             invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
@@ -157,14 +171,10 @@ class Invoice(models.Model):
 
                             else:
                                 _logger.error(
-                                    f"Error processing payment {odoo_payment.id} "
-                                    f"for Holded invoice {holded_url_id}: "
-                                    f"{response.text}")
-
-            self.bring_invoices_odoo()
+                                    f"Error processing payment {odoo_payment.id} for Holded invoice {holded_url_id}: {response.text}")
 
         except Exception as e:
-            _logger.error(f"An error occurred while processing payments in Holded: {e}")
+            _logger.error(f"An error occurred while processing payment batch: {e}")
 
     def bring_invoices_odoo(self):
         try:
@@ -203,7 +213,14 @@ class Invoice(models.Model):
 
     def sync_invoices_button(self):
         try:
+            start_time = time.time()
+
             self.insert_holded_invoices()
             self.pay_holded_invoices()
+
+            end_time = time.time()
+
+            total_time = end_time - start_time
+            _logger.info(f"Total time taken for syncing invoices: {total_time:.2f} seconds")
         except Exception as e:
             _logger.error("An error occurred while syncing invoices: %s", e)

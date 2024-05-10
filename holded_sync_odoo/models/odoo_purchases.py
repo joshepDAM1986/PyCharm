@@ -2,6 +2,7 @@ from odoo import models, fields
 from datetime import datetime
 import requests
 import logging
+import time
 
 _logger = logging.getLogger(__name__)
 
@@ -86,7 +87,20 @@ class Purchase(models.Model):
         try:
             odoo_purchases = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
 
-            for odoo_purchase in odoo_purchases:
+            batch_size = 100
+            total_purchases = len(odoo_purchases)
+            for index in range(0, total_purchases, batch_size):
+                batch_purchases = odoo_purchases[index:index + batch_size]
+                self.process_payment_batch(batch_purchases)
+
+            self.bring_purchases_odoo()
+
+        except Exception as e:
+            _logger.error(f"An error occurred while paying purchases in Holded: {e}")
+
+    def process_payment_batch(self, batch_purchases):
+        try:
+            for odoo_purchase in batch_purchases:
                 holded_purchases = self.env['holded_sync_odoo.odoo_purchases'].search(
                     [('invoiceNum', '=', odoo_purchase.name)])
 
@@ -103,11 +117,11 @@ class Purchase(models.Model):
                     if holded_treasury:
                         holded_payment_treasury_id = holded_treasury.holded_treasury_id
 
-                        odoo_payments = self.env['account.payment'].search(
-                            [('ref', '=', odoo_purchase.name),
-                             ('state', '=', 'posted'),
-                             ('payment_type', '=', 'outbound'),
-                             ('partner_id.name', '=', odoo_purchase.partner_id.name)])
+                        odoo_payments = self.env['account.payment'].search([('ref', '=', odoo_purchase.name),
+                                                                            ('state', '=', 'posted'),
+                                                                            ('payment_type', '=', 'outbound'),
+                                                                            ('partner_id.name', '=',
+                                                                             odoo_purchase.partner_id.name)])
 
                         for odoo_payment in odoo_payments:
                             holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
@@ -156,14 +170,11 @@ class Purchase(models.Model):
                                 })
                             else:
                                 _logger.error(
-                                    f"Error processing payment {odoo_payment.id} "
-                                    f"for Holded purchase: {holded_url_id}: "
+                                    f"Error processing payment {odoo_payment.id} for Holded purchase: {holded_url_id}: "
                                     f"{response.text}")
 
-            self.bring_purchases_odoo()
-
         except Exception as e:
-            _logger.error(f"An error occurred while paying purchases in Holded: {e}")
+            _logger.error(f"An error occurred while processing payment batch: {e}")
 
     def bring_purchases_odoo(self):
         try:
@@ -201,7 +212,14 @@ class Purchase(models.Model):
 
     def sync_purchases_button(self):
         try:
+            start_time = time.time()
+
             self.insert_holded_purchases()
             self.pay_holded_purchases()
+
+            end_time = time.time()
+
+            total_time = end_time - start_time
+            _logger.info(f"Total time taken for syncing purchases: {total_time:.2f} seconds")
         except Exception as e:
             _logger.error("An error occurred while syncing purchases: %s", e)
