@@ -52,6 +52,8 @@ class Refunds(models.Model):
                                                            datetime.min.time())
                     timestamp_datedue = int(refunds_dateduetime.timestamp())
 
+                    original_purchase = odoo_refunds.ref
+
                     refund_data = {
                         "invoiceNum": odoo_refunds.name,
                         "contactCode": contact_code,
@@ -64,7 +66,7 @@ class Refunds(models.Model):
                             "tax": sum(tax.amount for tax in line.tax_ids)
                         } for line in odoo_refunds.invoice_line_ids],
                         "customFields": [{
-                            "Factura": odoo_refunds.name
+                            "Factura": original_purchase
                         }],
                     }
 
@@ -132,7 +134,7 @@ class Refunds(models.Model):
                     for odoo_payment in odoo_payments:
                         holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
                             ('processed_payment', '=', 'Processed'),
-                            ('holded_payment_id', '=', holded_url_id),
+                            ('documentNum', '=', odoo_refunds.name),
                             ('paymentNum', '=', odoo_payment.name),
                             ('contact_name', '=', odoo_payment.partner_id.name),
                             ('amount', '=', odoo_payment.amount),
@@ -171,8 +173,7 @@ class Refunds(models.Model):
                                 f"Payment {odoo_payment.id} successfully processed for Holded refund {holded_url_id}")
 
                             new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                'holded_payment_id': holded_url_id,
-                                'treasury': holded_payment_treasury_id,
+                                'documentNum': odoo_refunds.name,
                                 'paymentNum': odoo_payment.name,
                                 'contact_name': odoo_refunds.partner_id.name,
                                 'amount': odoo_payment.amount,

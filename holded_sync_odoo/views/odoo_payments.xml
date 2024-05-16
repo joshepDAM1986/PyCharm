@@ -25,8 +25,7 @@
             <field name="model">holded_sync_odoo.odoo_payments</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="holded_payment_id"/>
-                    <field name="treasury"/>
+                    <field name="documentNum"/>
                     <field name="paymentNum"/>
                     <field name="contact_name"/>
                     <field name="amount"/>
@@ -54,8 +53,7 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="holded_payment_id" readonly="1"/>
-                            <field name="treasury" readonly="1"/>
+                            <field name="documentNum" readonly="1"/>
                             <field name="paymentNum" readonly="1"/>
                             <field name="contact_name" readonly="1"/>
                             <field name="amount" readonly="1"/>

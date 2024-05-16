@@ -52,6 +52,8 @@ class Creditnotes(models.Model):
                                                               datetime.min.time())
                     timestamp_datedue = int(creditnote_dateduetime.timestamp())
 
+                    original_invoice = odoo_creditnotes.ref
+
                     creditnote_data = {
                         "invoiceNum": odoo_creditnotes.name,
                         "contactCode": contact_code,
@@ -64,7 +66,7 @@ class Creditnotes(models.Model):
                             "tax": sum(tax.amount for tax in line.tax_ids)
                         } for line in odoo_creditnotes.invoice_line_ids],
                         "customFields": [{
-                           "Factura": odoo_creditnotes.name
+                            "Factura": original_invoice
                         }],
                     }
 
@@ -132,7 +134,7 @@ class Creditnotes(models.Model):
                     for odoo_payment in odoo_payments:
                         holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
                             ('processed_payment', '=', 'Processed'),
-                            ('holded_payment_id', '=', holded_url_id),
+                            ('documentNum', '=', odoo_creditnotes.name),
                             ('paymentNum', '=', odoo_payment.name),
                             ('contact_name', '=', odoo_payment.partner_id.name),
                             ('amount', '=', odoo_payment.amount),
@@ -171,8 +173,7 @@ class Creditnotes(models.Model):
                                 f"Payment {odoo_payment.id} successfully processed for Holded credit note {holded_url_id}")
 
                             new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                'holded_payment_id': holded_url_id,
-                                'treasury': holded_payment_treasury_id,
+                                'documentNum': odoo_creditnotes.name,
                                 'paymentNum': odoo_payment.name,
                                 'contact_name': odoo_creditnotes.partner_id.name,
                                 'amount': odoo_payment.amount,
