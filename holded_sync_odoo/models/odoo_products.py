@@ -4,9 +4,10 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class Product(models.Model):
     _name = 'holded_sync_odoo.odoo_products'
-    _description = 'Odoo internal products to be synchronized and exported to Holded ERP'
+    _description = 'Odoo products to be synchronized and exported to Holded ERP'
 
     holded_product_id = fields.Char(string='Holded Product ID')
     sku = fields.Char(string='SKU')
@@ -35,8 +36,8 @@ class Product(models.Model):
                 "barcode": odoo_product.barcode,
             }
 
-            holded_product = next((product for product in holded_products if product['sku'] == odoo_product.default_code),
-                                  None)
+            holded_product = next((product for product in holded_products if product['sku'] ==
+                                   odoo_product.default_code), None)
 
             if holded_product:
                 url_update_holded_product = f"https://api.holded.com/api/invoicing/v1/products/{holded_product['id']}"

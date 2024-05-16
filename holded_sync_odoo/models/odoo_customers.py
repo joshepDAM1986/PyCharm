@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class Customer(models.Model):
     _name = 'holded_sync_odoo.odoo_customers'
-    _description = 'Odoo internal customers to be synchronized and exported to Holded ERP'
+    _description = 'Odoo customers to be synchronized and exported to Holded ERP'
 
     holded_customer_id = fields.Char(string='Holded Customer ID')
     name = fields.Char(string='Name')

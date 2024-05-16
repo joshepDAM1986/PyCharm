@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.act_window" id="odoo_refunds_list_action">
+            <field name="name">Sync Purchase's Refunds</field>
+            <field name="res_model">holded_sync_odoo.odoo_refunds</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">New Refund</p>
+            </field>
+            <field name="context">{'button_sync_visible': True}</field>
+        </record>
+
+        <menuitem id="odoo_refunds_menu" name="Odoo Refunds"
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_refunds_list_action"
+                  sequence="70"/>
+
+        <record id="view_odoo_refunds_tree" model="ir.ui.view">
+            <field name="name">odoo_refunds.tree</field>
+            <field name="model">holded_sync_odoo.odoo_refunds</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>
+                    <field name="holded_refund_id"/>
+                    <field name="contactName"/>
+                    <field name="invoiceNum"/>
+                    <field name="holded_payment_state"/>
+                    <field name="holded_amount_total"/>
+                    <field name="holded_payment_charged"/>
+                    <field name="holded_residual_payment"/>
+                </tree>
+            </field>
+        </record>
+
+         <record model="ir.ui.view" id="view_odoo_refunds_search">
+            <field name="name">odoo_refunds.search</field>
+            <field name="model">holded_sync_odoo.odoo_refunds</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_odoo_refunds_form" model="ir.ui.view">
+            <field name="name">odoo_refunds.form</field>
+            <field name="model">holded_sync_odoo.odoo_refunds</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="holded_refund_id" readonly="1"/>
+                            <field name="contactName" readonly="1"/>
+                            <field name="invoiceNum" readonly="1"/>
+                            <field name="holded_payment_state" readonly="1"/>
+                            <field name="holded_amount_total" readonly="1"/>
+                            <field name="holded_payment_charged" readonly="1"/>
+                            <field name="holded_residual_payment" readonly="1"/>
+                        </group>
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

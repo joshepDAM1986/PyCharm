@@ -2,14 +2,13 @@ from odoo import models, fields
 from datetime import datetime
 import requests
 import logging
-import time
 
 _logger = logging.getLogger(__name__)
 
 
 class Invoice(models.Model):
     _name = 'holded_sync_odoo.odoo_invoices'
-    _description = 'Odoo internal invoices to be synchronized and exported to Holded ERP'
+    _description = 'Odoo invoices to be synchronized and exported to Holded ERP'
 
     holded_invoice_id = fields.Char(string='Holded Invoice ID')
     invoiceNum = fields.Char(string='Invoice Number')
@@ -116,62 +115,69 @@ class Invoice(models.Model):
 
                     if holded_treasury:
                         holded_payment_treasury_id = holded_treasury.holded_treasury_id
+                    else:
+                        holded_payment_treasury_id = None
 
-                        odoo_payments = self.env['account.payment'].search(
-                            [('ref', '=', odoo_invoice.payment_reference),
-                             ('state', '=', 'posted'),
-                             ('payment_type', '=', 'inbound'),
-                             ('partner_id.name', '=', odoo_invoice.partner_id.name)])
+                    odoo_payments = self.env['account.payment'].search([('ref', '=', odoo_invoice.payment_reference),
+                                                                        ('state', '=', 'posted'),
+                                                                        ('payment_type', '=', 'inbound'),
+                                                                        ('partner_id.name', '=',
+                                                                         odoo_invoice.partner_id.name)])
 
-                        for odoo_payment in odoo_payments:
-                            holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
-                                ('holded_payment_id', '=', holded_url_id),
-                                ('amount', '=', odoo_payment.amount),
-                                ('date', '=', odoo_payment.date),
-                                ('processed_payment', '=', 'Processed')
-                            ])
+                    for odoo_payment in odoo_payments:
+                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
+                            ('processed_payment', '=', 'Processed'),
+                            ('holded_payment_id', '=', holded_url_id),
+                            ('paymentNum', '=', odoo_payment.name),
+                            ('contact_name', '=', odoo_payment.partner_id.name),
+                            ('amount', '=', odoo_payment.amount),
+                            ('date', '=', odoo_payment.date),
+                        ])
 
-                            if holded_payment_exists:
-                                _logger.info("Payment %s for Holded invoice %s already processed", odoo_payment.id,
-                                             holded_invoice.invoiceNum)
-                                continue
+                        if holded_payment_exists:
+                            _logger.info("Payment %s for Holded invoice %s already processed", odoo_payment.id,
+                                         holded_invoice.invoiceNum)
+                            continue
 
-                            invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
-                                                                datetime.min.time())
-                            timestamp_date = int(invoice_datetime.timestamp())
+                        invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
+                                                            datetime.min.time())
+                        timestamp_date = int(invoice_datetime.timestamp())
 
-                            url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_url_id}/pay"
+                        url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_url_id}/pay"
 
-                            headers = {
-                                "accept": "application/json",
-                                "content-type": "application/json",
-                                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                            }
+                        headers = {
+                            "accept": "application/json",
+                            "content-type": "application/json",
+                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+                        }
 
-                            invoice_data = {
-                                "amount": odoo_payment.amount,
-                                "date": timestamp_date,
-                                "treasury": holded_payment_treasury_id
-                            }
+                        invoice_data = {
+                            "amount": odoo_payment.amount,
+                            "date": timestamp_date,
+                        }
 
-                            response = requests.post(url, json=invoice_data, headers=headers)
+                        if odoo_payment.journal_id.type == "bank":
+                            invoice_data["treasury"] = holded_payment_treasury_id
 
-                            if response.status_code == 200:
-                                _logger.info(
-                                    f"Payment {odoo_payment.id} successfully processed for Holded invoice {holded_url_id}")
+                        response = requests.post(url, json=invoice_data, headers=headers)
 
-                                new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                    'holded_payment_id': holded_url_id,
-                                    'treasury': holded_payment_treasury_id,
-                                    'contact_name': odoo_invoice.partner_id.name,
-                                    'amount': odoo_payment.amount,
-                                    'date': odoo_payment.date,
-                                    'processed_payment': 'Processed'
-                                })
+                        if response.status_code == 200:
+                            _logger.info(
+                                f"Payment {odoo_payment.id} successfully processed for Holded invoice {holded_url_id}")
 
-                            else:
-                                _logger.error(
-                                    f"Error processing payment {odoo_payment.id} for Holded invoice {holded_url_id}: {response.text}")
+                            new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
+                                'holded_payment_id': holded_url_id,
+                                'treasury': holded_payment_treasury_id,
+                                'paymentNum': odoo_payment.name,
+                                'contact_name': odoo_invoice.partner_id.name,
+                                'amount': odoo_payment.amount,
+                                'date': odoo_payment.date,
+                                'processed_payment': 'Processed'
+                            })
+
+                        else:
+                            _logger.error(
+                                f"Error processing payment {odoo_payment.id} for Holded invoice {holded_url_id}: {response.text}")
 
         except Exception as e:
             _logger.error(f"An error occurred while processing payment batch: {e}")
@@ -213,14 +219,7 @@ class Invoice(models.Model):
 
     def sync_invoices_button(self):
         try:
-            start_time = time.time()
-
             self.insert_holded_invoices()
             self.pay_holded_invoices()
-
-            end_time = time.time()
-
-            total_time = end_time - start_time
-            _logger.info(f"Total time taken for syncing invoices: {total_time:.2f} seconds")
         except Exception as e:
             _logger.error("An error occurred while syncing invoices: %s", e)

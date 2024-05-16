@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 class Treasury(models.Model):
     _name = 'holded_sync_odoo.odoo_treasuries'
-    _description = 'Odoo internal treasuries to be synchronized and exported to Holded ERP'
+    _description = 'Odoo treasuries to be synchronized and exported to Holded ERP'
 
     holded_treasury_id = fields.Char(string='Holded Treasury ID')
     name = fields.Char(string='Bank Name',)
@@ -32,7 +32,7 @@ class Treasury(models.Model):
                 "name": odoo_treasury.name,
                 "type": "bank",
                 "iban": iban,
-                "swift": odoo_treasury.bic
+                "bic": odoo_treasury.bic
             }
 
             holded_treasury = next(

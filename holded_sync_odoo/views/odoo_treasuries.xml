@@ -13,7 +13,8 @@
 
         <menuitem id="odoo_treasuries_menu" name="Odoo Treasuries"
                   parent="main_holded_sync_odoo_menu"
-                  action="odoo_treasuries_list_action"/>
+                  action="odoo_treasuries_list_action"
+                  sequence="30"/>
 
         <record id="view_odoo_treasuries_tree" model="ir.ui.view">
             <field name="name">odoo_treasuries.tree</field>

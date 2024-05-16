@@ -13,7 +13,8 @@
 
         <menuitem id="odoo_customers_menu" name="Odoo Customers"
                   parent="main_holded_sync_odoo_menu"
-                  action="odoo_customers_list_action"/>
+                  action="odoo_customers_list_action"
+                  sequence="20"/>
 
         <record id="view_odoo_customers_tree" model="ir.ui.view">
             <field name="name">odoo_customers.tree</field>

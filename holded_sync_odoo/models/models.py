@@ -5,3 +5,5 @@ from . import odoo_invoices
 from . import odoo_purchases
 from . import odoo_payments
 from . import odoo_treasuries
+from . import odoo_creditnotes
+from . import odoo_refunds
