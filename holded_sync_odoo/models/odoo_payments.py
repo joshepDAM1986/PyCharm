@@ -14,4 +14,3 @@ class Payment(models.Model):
     amount = fields.Float(string='Amount')
     desc = fields.Char(string='Description')
     date = fields.Date(string="Date")
-    processed_payment = fields.Char(string="Processed")

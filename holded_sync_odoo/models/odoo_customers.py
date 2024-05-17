@@ -4,6 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class Customer(models.Model):
     _name = 'holded_sync_odoo.odoo_customers'
     _description = 'Odoo customers to be synchronized and exported to Holded ERP'
@@ -23,17 +24,23 @@ class Customer(models.Model):
     countryCode = fields.Char(string='Country Code')
     tags = fields.Char(string='Tags')
 
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/contacts"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
     def insert_or_update_customer(self, odoo_customer, holded_contacts):
         try:
             is_company = odoo_customer.is_company
             contact_type = 0 if is_company else 1
             tags = odoo_customer.category_id.mapped('name')
-
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
 
             customer_data = {
                 "isperson": contact_type,
@@ -68,15 +75,14 @@ class Customer(models.Model):
                                   None)
 
             if holded_contact:
-                url_update_holded_contact = f"https://api.holded.com/api/invoicing/v1/contacts/{holded_contact['id']}"
-                response = requests.put(url_update_holded_contact, headers=headers, json=customer_data)
+                url = f"{self.holded_api_url}/{holded_contact['id']}"
+                response = requests.put(url, headers=self.holded_api_headers, json=customer_data)
                 if response.status_code == 200:
                     _logger.info("Updated customer in Holded: %s", customer_data)
                 else:
                     _logger.error("Error while updating customer in Holded: %s", response.text)
             else:
-                url_create_holded_contact = "https://api.holded.com/api/invoicing/v1/contacts"
-                response = requests.post(url_create_holded_contact, headers=headers, json=customer_data)
+                response = requests.post(self.holded_api_url, headers=self.holded_api_headers, json=customer_data)
                 if response.status_code == 200:
                     holded_customer_id = response.json().get('id')
                     odoo_customer.write({'holded_customer_id': holded_customer_id})
@@ -88,14 +94,7 @@ class Customer(models.Model):
 
     def insert_customers(self):
         try:
-            url_get_holded_contacts = "https://api.holded.com/api/invoicing/v1/contacts"
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url_get_holded_contacts, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
             holded_contacts = response.json()
 
             odoo_customers = self.env['res.partner'].search([])
@@ -107,13 +106,7 @@ class Customer(models.Model):
 
     def bring_customers(self):
         try:
-            url = "https://api.holded.com/api/invoicing/v1/contacts"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
             if response.status_code == 200:
                 customers_list = response.json()
                 odoo_customers = self.env['holded_sync_odoo.odoo_customers'].search([])

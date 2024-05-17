@@ -18,6 +18,18 @@ class Product(models.Model):
     cost = fields.Float(string='Cost Price')
     barcode = fields.Char(string='Barcode')
 
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/products"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
     def insert_or_update_products(self, odoo_product, holded_products):
         try:
             headers = {
@@ -40,15 +52,14 @@ class Product(models.Model):
                                    odoo_product.default_code), None)
 
             if holded_product:
-                url_update_holded_product = f"https://api.holded.com/api/invoicing/v1/products/{holded_product['id']}"
-                response = requests.put(url_update_holded_product, headers=headers, json=product_data)
+                url = f"{self.holded_api_url}/{holded_product['id']}"
+                response = requests.put(url, headers=self.holded_api_headers, json=product_data)
                 if response.status_code == 200:
                     _logger.info("Updated product in Holded: %s", product_data)
                 else:
                     _logger.error("Error while updating product in Holded: %s", response.text)
             else:
-                url_create_holded_product = "https://api.holded.com/api/invoicing/v1/products"
-                response = requests.post(url_create_holded_product, headers=headers, json=product_data)
+                response = requests.post(self.holded_api_url, headers=self.holded_api_headers, json=product_data)
                 if response.status_code == 200:
                     holded_product_id = response.json().get('id')
                     odoo_product.write({'holded_product_id': holded_product_id})
@@ -60,14 +71,8 @@ class Product(models.Model):
 
     def insert_products(self):
         try:
-            url_get_holded_products = "https://api.holded.com/api/invoicing/v1/products"
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
 
-            response = requests.get(url_get_holded_products, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
             holded_products = response.json()
 
             odoo_products = self.env['product.product'].search([])
@@ -79,13 +84,7 @@ class Product(models.Model):
 
     def bring_products(self):
         try:
-            url = "https://api.holded.com/api/invoicing/v1/products"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
             if response.status_code == 200:
                 product_list = response.json()
                 odoo_products = self.env['holded_sync_odoo.odoo_products'].search([])

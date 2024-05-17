@@ -130,7 +130,6 @@ class Invoice(models.Model):
 
                     for odoo_payment in odoo_payments:
                         holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
-                            ('processed_payment', '=', 'Processed'),
                             ('documentNum', '=', odoo_invoice.name),
                             ('paymentNum', '=', odoo_payment.name),
                             ('contact_name', '=', odoo_payment.partner_id.name),
@@ -169,7 +168,6 @@ class Invoice(models.Model):
                                 'contact_name': odoo_invoice.partner_id.name,
                                 'amount': odoo_payment.amount,
                                 'date': odoo_payment.date,
-                                'processed_payment': 'Processed'
                             })
 
                         else:

@@ -2,7 +2,6 @@
 <odoo>
     <data>
 
-        <!-- Acción de ventana para listar los pagos -->
         <record model="ir.actions.act_window" id="odoo_payments_list_action">
             <field name="name">Sync Payments</field>
             <field name="res_model">holded_sync_odoo.odoo_payments</field>
@@ -13,13 +12,11 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-        <!-- Elemento de menú para acceder a los pagos desde el menú principal -->
         <menuitem id="odoo_payments_menu" name="Odoo Payments"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_payments_list_action"
                   sequence="80"/>
 
-        <!-- Vista de árbol para mostrar los pagos -->
         <record id="view_odoo_payments_tree" model="ir.ui.view">
             <field name="name">odoo_payments.tree</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
@@ -30,12 +27,10 @@
                     <field name="contact_name"/>
                     <field name="amount"/>
                     <field name="date"/>
-                    <field name="processed_payment" readonly="1"/>
                 </tree>
             </field>
         </record>
 
-        <!-- Vista de búsqueda para los pagos -->
         <record model="ir.ui.view" id="view_odoo_payments_search">
             <field name="name">odoo_payments.search</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
@@ -45,7 +40,6 @@
             </field>
         </record>
 
-        <!-- Vista de formulario para mostrar los detalles de los pagos -->
         <record id="view_sync_payment_form" model="ir.ui.view">
             <field name="name">odoo_payments.form</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
@@ -58,9 +52,8 @@
                             <field name="contact_name" readonly="1"/>
                             <field name="amount" readonly="1"/>
                             <field name="date" readonly="1"/>
-                            <field name="processed_payment" readonly="1"/>
                         </group>
-                        <!-- Aquí puedes agregar más campos si es necesario -->
+
                         <notebook>
 
                         </notebook>
