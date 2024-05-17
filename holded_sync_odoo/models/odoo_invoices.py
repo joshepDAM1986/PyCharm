@@ -5,7 +5,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 class Invoice(models.Model):
     _name = 'holded_sync_odoo.odoo_invoices'
     _description = 'Odoo invoices to be synchronized and exported to Holded ERP'
@@ -17,6 +16,18 @@ class Invoice(models.Model):
     holded_amount_total = fields.Float(string="Total")
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
+
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/documents/invoice"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
 
     def insert_holded_invoices(self):
         try:
@@ -36,14 +47,6 @@ class Invoice(models.Model):
                 if (odoo_invoice.state != "draft"
                         and odoo_invoice.move_type != "entry"
                         and odoo_invoice.move_type == "out_invoice"):
-                    url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
-
-                    headers = {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                    }
-
                     contact_code = odoo_invoice.partner_id.vat
                     invoice_datetime = datetime.combine(odoo_invoice.invoice_date or fields.Date.today(),
                                                         datetime.min.time())
@@ -71,7 +74,8 @@ class Invoice(models.Model):
                         ('invoiceNum', '=', odoo_invoice.name)
                     ])
                     if not holded_invoice_exists:
-                        response = requests.post(url, json=invoice_data, headers=headers)
+                        response = (
+                            requests.post(self.holded_api_url, json=invoice_data, headers=self.holded_api_headers))
                         if response.status_code == 200:
                             _logger.info("Invoice %s successfully inserted: %s", odoo_invoice.id, response.text)
                         else:
@@ -143,13 +147,7 @@ class Invoice(models.Model):
                                                             datetime.min.time())
                         timestamp_date = int(invoice_datetime.timestamp())
 
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/invoice/{holded_url_id}/pay"
-
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
+                        url = f"{self.holded_api_url}/{holded_url_id}/pay"
 
                         invoice_data = {
                             "amount": odoo_payment.amount,
@@ -159,7 +157,7 @@ class Invoice(models.Model):
                         if odoo_payment.journal_id.type == "bank":
                             invoice_data["treasury"] = holded_payment_treasury_id
 
-                        response = requests.post(url, json=invoice_data, headers=headers)
+                        response = requests.post(url, json=invoice_data, headers=self.holded_api_headers)
 
                         if response.status_code == 200:
                             _logger.info(
@@ -183,14 +181,7 @@ class Invoice(models.Model):
 
     def bring_invoices_odoo(self):
         try:
-
-            url = "https://api.holded.com/api/invoicing/v1/documents/invoice"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 invoices_list = response.json()

@@ -18,6 +18,18 @@ class Creditnotes(models.Model):
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
 
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/documents/creditnote"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
     def insert_holded_creditnotes(self):
         try:
             self.bring_creditnotes_odoo()
@@ -36,13 +48,6 @@ class Creditnotes(models.Model):
                 if (odoo_creditnotes.state != "draft"
                         and odoo_creditnotes.move_type != "entry"
                         and odoo_creditnotes.move_type == "out_refund"):
-                    url = "https://api.holded.com/api/invoicing/v1/documents/creditnote"
-
-                    headers = {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                    }
 
                     contact_code = odoo_creditnotes.partner_id.vat
                     creditnote_datetime = datetime.combine(odoo_creditnotes.invoice_date or fields.Date.today(),
@@ -54,6 +59,14 @@ class Creditnotes(models.Model):
 
                     original_invoice = odoo_creditnotes.ref
 
+                    invoice_taxes = []
+                    for line in odoo_creditnotes.invoice_line_ids:
+                        tax_names = []
+                        for tax in line.tax_ids:
+                            tax_name = "s_" + tax.amount_type + "_" + str(int(tax.amount * 100))
+                            tax_names.append(tax_name)
+                        invoice_taxes.append(",".join(tax_names))
+
                     creditnote_data = {
                         "invoiceNum": odoo_creditnotes.name,
                         "contactCode": contact_code,
@@ -63,7 +76,7 @@ class Creditnotes(models.Model):
                             "units": line.quantity,
                             "sku": line.product_id.code,
                             "subtotal": line.price_unit,
-                            "tax": sum(tax.amount for tax in line.tax_ids)
+                            "tax": sum(tax.amount for tax in line.tax_ids),
                         } for line in odoo_creditnotes.invoice_line_ids],
                         "customFields": [{
                             "Factura": original_invoice
@@ -76,7 +89,8 @@ class Creditnotes(models.Model):
                         ('invoiceNum', '=', odoo_creditnotes.name)
                     ])
                     if not holded_creditnote_exists:
-                        response = requests.post(url, json= creditnote_data, headers=headers)
+                        response = (
+                            requests.post(self.holded_api_url, json=creditnote_data, headers=self.holded_api_headers))
                         if response.status_code == 200:
                             _logger.info("Credit note %s successfully inserted: %s", odoo_creditnotes.id, response.text)
                         else:
@@ -150,13 +164,7 @@ class Creditnotes(models.Model):
                                                                datetime.min.time())
                         timestamp_date = int(creditnote_datetime.timestamp())
 
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/creditnote/{holded_url_id}/pay"
-
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
+                        url = f"{self.holded_api_url}/{holded_url_id}/pay"
 
                         creditnote_data = {
                             "amount": odoo_payment.amount,
@@ -166,7 +174,7 @@ class Creditnotes(models.Model):
                         if odoo_payment.journal_id.type == "bank":
                             creditnote_data["treasury"] = holded_payment_treasury_id
 
-                        response = requests.post(url, json=creditnote_data, headers=headers)
+                        response = requests.post(url, json=creditnote_data, headers=self.holded_api_headers)
 
                         if response.status_code == 200:
                             _logger.info(
@@ -190,14 +198,7 @@ class Creditnotes(models.Model):
 
     def bring_creditnotes_odoo(self):
         try:
-
-            url = "https://api.holded.com/api/invoicing/v1/documents/creditnote"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 creditnotes_list = response.json()

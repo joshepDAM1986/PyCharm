@@ -18,6 +18,18 @@ class Refunds(models.Model):
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
 
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/documents/purchaserefund"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
     def insert_holded_refunds(self):
         try:
             self.bring_refunds_odoo()
@@ -36,13 +48,6 @@ class Refunds(models.Model):
                 if (odoo_refunds.state != "draft"
                         and odoo_refunds.move_type != "entry"
                         and odoo_refunds.move_type == "in_refund"):
-                    url = "https://api.holded.com/api/invoicing/v1/documents/purchaserefund"
-
-                    headers = {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                    }
 
                     contact_code = odoo_refunds.partner_id.vat
                     refunds_datetime = datetime.combine(odoo_refunds.invoice_date or fields.Date.today(),
@@ -76,7 +81,8 @@ class Refunds(models.Model):
                         ('invoiceNum', '=', odoo_refunds.name)
                     ])
                     if not holded_refund_exists:
-                        response = requests.post(url, json= refund_data, headers=headers)
+                        response = (
+                            requests.post(self.holded_api_url, json= refund_data, headers=self.holded_api_headers))
                         if response.status_code == 200:
                             _logger.info("Refund %s successfully inserted: %s", odoo_refunds.id, response.text)
                         else:
@@ -150,13 +156,7 @@ class Refunds(models.Model):
                                                            datetime.min.time())
                         timestamp_date = int(refund_datetime.timestamp())
 
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/purchaserefund/{holded_url_id}/pay"
-
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
+                        url = f"{self.holded_api_url}/{holded_url_id}/pay"
 
                         refund_data = {
                             "amount": odoo_payment.amount,
@@ -166,7 +166,7 @@ class Refunds(models.Model):
                         if odoo_payment.journal_id.type == "bank":
                             refund_data["treasury"] = holded_payment_treasury_id
 
-                        response = requests.post(url, json=refund_data, headers=headers)
+                        response = requests.post(url, json=refund_data, headers=self.holded_api_headers)
 
                         if response.status_code == 200:
                             _logger.info(
@@ -190,14 +190,7 @@ class Refunds(models.Model):
 
     def bring_refunds_odoo(self):
         try:
-
-            url = "https://api.holded.com/api/invoicing/v1/documents/purchaserefund"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 refunds_list = response.json()

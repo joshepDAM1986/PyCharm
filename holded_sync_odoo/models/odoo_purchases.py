@@ -18,6 +18,18 @@ class Purchase(models.Model):
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
 
+    @property
+    def holded_api_url(self):
+        return "https://api.holded.com/api/invoicing/v1/documents/purchase"
+
+    @property
+    def holded_api_headers(self):
+        return {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+        }
+
     def insert_holded_purchases(self):
         try:
             self.bring_purchases_odoo()
@@ -36,13 +48,6 @@ class Purchase(models.Model):
                 if (odoo_purchase.state != "draft"
                         and odoo_purchase.move_type != "entry"
                         and odoo_purchase.move_type == "in_invoice"):
-                    url = f"https://api.holded.com/api/invoicing/v1/documents/purchase"
-
-                    headers = {
-                        "accept": "application/json",
-                        "content-type": "application/json",
-                        "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                    }
 
                     contact_code = odoo_purchase.partner_id.vat
                     purchase_datetime = datetime.combine(odoo_purchase.invoice_date or fields.Date.today(),
@@ -71,7 +76,8 @@ class Purchase(models.Model):
                         ('invoiceNum', '=', odoo_purchase.name)
                     ])
                     if not holded_purchase_exists:
-                        response = requests.post(url, json=purchase_data, headers=headers)
+                        response = (
+                            requests.post(self.holded_api_url, json=purchase_data, headers=self.holded_api_headers))
                         if response.status_code == 200:
                             _logger.info("Purchase %s successfully inserted: %s", odoo_purchase.id, response.text)
                         else:
@@ -143,13 +149,7 @@ class Purchase(models.Model):
                                                             datetime.min.time())
                         timestamp_date = int(invoice_datetime.timestamp())
 
-                        url = f"https://api.holded.com/api/invoicing/v1/documents/purchase/{holded_url_id}/pay"
-
-                        headers = {
-                            "accept": "application/json",
-                            "content-type": "application/json",
-                            "key": "cf6626233fa4b33a99aa841dd37a11a9"
-                        }
+                        url = f"{self.holded_api_url}/{holded_url_id}/pay"
 
                         purchase_data = {
                             "amount": odoo_payment.amount,
@@ -159,7 +159,7 @@ class Purchase(models.Model):
                         if odoo_payment.journal_id.type == 'bank':
                             purchase_data["treasury"] = holded_payment_treasury_id
 
-                        response = requests.post(url, json=purchase_data, headers=headers)
+                        response = requests.post(url, json=purchase_data, headers=self.holded_api_headers)
 
                         if response.status_code == 200:
                             _logger.info(
@@ -184,13 +184,7 @@ class Purchase(models.Model):
 
     def bring_purchases_odoo(self):
         try:
-            url = "https://api.holded.com/api/invoicing/v1/documents/purchase"
-            headers = {
-                "accept": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
-            response = requests.get(url, headers=headers)
+            response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 purchases_list = response.json()
