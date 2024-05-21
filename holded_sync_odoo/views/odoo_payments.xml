@@ -3,7 +3,7 @@
     <data>
 
         <record model="ir.actions.act_window" id="odoo_payments_list_action">
-            <field name="name">Sync Payments</field>
+            <field name="name">Holded Payments</field>
             <field name="res_model">holded_sync_odoo.odoo_payments</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -12,10 +12,10 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-        <menuitem id="odoo_payments_menu" name="Odoo Payments"
+        <menuitem id="odoo_payments_menu" name="Payments"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_payments_list_action"
-                  sequence="80"/>
+                  sequence="60"/>
 
         <record id="view_odoo_payments_tree" model="ir.ui.view">
             <field name="name">odoo_payments.tree</field>

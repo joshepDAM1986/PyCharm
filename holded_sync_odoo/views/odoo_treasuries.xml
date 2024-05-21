@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.actions.act_window" id="odoo_treasuries_list_action">
-            <field name="name">Odoo Treasuries</field>
+            <field name="name">Holded Treasuries</field>
             <field name="res_model">holded_sync_odoo.odoo_treasuries</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -11,7 +11,7 @@
             </field>
         </record>
 
-        <menuitem id="odoo_treasuries_menu" name="Odoo Treasuries"
+        <menuitem id="odoo_treasuries_menu" name="Treasuries"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_treasuries_list_action"
                   sequence="30"/>
@@ -21,7 +21,7 @@
             <field name="model">holded_sync_odoo.odoo_treasuries</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_treasuries_button" string="Synchronize" type="object" class="btn-primary"/>
+<!--                    <button name="sync_treasuries_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_treasury_id"/>
                     <field name="name"/>
                     <field name="bic"/>

@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.actions.act_window" id="odoo_refunds_list_action">
-            <field name="name">Sync Purchase's Refunds</field>
+            <field name="name">Holded Purchase's Refunds</field>
             <field name="res_model">holded_sync_odoo.odoo_refunds</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -11,17 +11,16 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-        <menuitem id="odoo_refunds_menu" name="Odoo Refunds"
-                  parent="main_holded_sync_odoo_menu"
-                  action="odoo_refunds_list_action"
-                  sequence="70"/>
+        <menuitem id="odoo_refunds_menu" name="Purchases Refunds"
+                  parent="purchases_menu"
+                  action="odoo_refunds_list_action"/>
 
         <record id="view_odoo_refunds_tree" model="ir.ui.view">
             <field name="name">odoo_refunds.tree</field>
             <field name="model">holded_sync_odoo.odoo_refunds</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>
+<!--                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_refund_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

@@ -23,10 +23,12 @@ class Invoice(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_holded_invoices(self):
@@ -205,9 +207,9 @@ class Invoice(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing invoices from Holded to Odoo: %s", e)
 
-    def sync_invoices_button(self):
-        try:
-            self.insert_holded_invoices()
-            self.pay_holded_invoices()
-        except Exception as e:
-            _logger.error("An error occurred while syncing invoices: %s", e)
+    # def sync_invoices_button(self):
+    #     try:
+    #         self.insert_holded_invoices()
+    #         self.pay_holded_invoices()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing invoices: %s", e)

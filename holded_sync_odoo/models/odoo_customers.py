@@ -30,10 +30,12 @@ class Customer(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_or_update_customer(self, odoo_customer, holded_contacts):
@@ -83,9 +85,7 @@ class Customer(models.Model):
                     _logger.error("Error while updating customer in Holded: %s", response.text)
             else:
                 response = requests.post(self.holded_api_url, headers=self.holded_api_headers, json=customer_data)
-                if response.status_code == 200:
-                    holded_customer_id = response.json().get('id')
-                    odoo_customer.write({'holded_customer_id': holded_customer_id})
+                if response.status_code == 201:
                     _logger.info("Created customer in Holded: %s", customer_data)
                 else:
                     _logger.error("Error while creating customer in Holded: %s", response.text)
@@ -139,9 +139,9 @@ class Customer(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing customers from Holded to Odoo: %s", e)
 
-    def sync_customers_button(self):
-        try:
-            self.insert_customers()
-            self.bring_customers()
-        except Exception as e:
-            _logger.error("An error occurred while syncing customers: %s", e)
+    # def sync_customers_button(self):
+    #     try:
+    #         self.insert_customers()
+    #         self.bring_customers()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing customers: %s", e)

@@ -24,10 +24,12 @@ class Creditnotes(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_holded_creditnotes(self):
@@ -222,9 +224,9 @@ class Creditnotes(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing credit notes from Holded to Odoo: %s", e)
 
-    def sync_creditnotes_button(self):
-        try:
-            self.insert_holded_creditnotes()
-            self.pay_holded_creditnotes()
-        except Exception as e:
-            _logger.error("An error occurred while syncing credit notes: %s", e)
+    # def sync_creditnotes_button(self):
+    #     try:
+    #         self.insert_holded_creditnotes()
+    #         self.pay_holded_creditnotes()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing credit notes: %s", e)

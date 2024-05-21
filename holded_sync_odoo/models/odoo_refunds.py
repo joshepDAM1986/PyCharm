@@ -24,10 +24,12 @@ class Refunds(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_holded_refunds(self):
@@ -214,9 +216,9 @@ class Refunds(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing refunds from Holded to Odoo: %s", e)
 
-    def sync_refunds_button(self):
-        try:
-            self.insert_holded_refunds()
-            self.pay_holded_refunds()
-        except Exception as e:
-            _logger.error("An error occurred while syncing refunds: %s", e)
+    # def sync_refunds_button(self):
+    #     try:
+    #         self.insert_holded_refunds()
+    #         self.pay_holded_refunds()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing refunds: %s", e)

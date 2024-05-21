@@ -1,0 +1,41 @@
+<odoo>
+    <data>
+        <record id="view_holded_sync_odoo_apikeyconfig_tree" model="ir.ui.view">
+            <field name="name">holded.sync.odoo.apikeyconfig.tree</field>
+            <field name="model">holded.sync.odoo.apikeyconfig</field>
+            <field name="arch" type="xml">
+                <tree string="Holded Sync Odoo Configuration">
+                    <field name="api_key"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_holded_sync_odoo_apikeyconfig_form" model="ir.ui.view">
+            <field name="name">holded.sync.odoo.apikeyconfig.form</field>
+            <field name="model">holded.sync.odoo.apikeyconfig</field>
+            <field name="arch" type="xml">
+                <form string="Holded Sync Odoo Configuration">
+                    <group>
+                        <field name="api_key"/>
+                    </group>
+                    <footer>
+                        <button string="Save" type="object" class="btn-primary" name="save_api_key"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_holded_sync_odoo_apikeyconfig" model="ir.actions.act_window">
+            <field name="name">Holded Sync Odoo Configuration</field>
+            <field name="res_model">holded.sync.odoo.apikeyconfig</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_holded_sync_odoo_config" name="Configuration"
+                  parent="main_holded_sync_odoo_menu"
+                  action="action_holded_sync_odoo_apikeyconfig"
+                  sequence="70"/>
+    </data>
+</odoo>

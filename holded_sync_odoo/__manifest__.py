@@ -12,7 +12,6 @@
     'version': '0.1',
     'depends': ['base','account'],
     'data': [
-        'views/custom_products.xml',
         'views/odoo_products.xml',
         'views/odoo_customers.xml',
         'views/odoo_invoices.xml',
@@ -21,6 +20,8 @@
         'views/odoo_treasuries.xml',
         'views/odoo_creditnotes.xml',
         'views/odoo_refunds.xml',
+        'views/apikeyconfig.xml',
+        'views/autosync.xml',
     ],
     'demo': [
         'demo/demo.xml',

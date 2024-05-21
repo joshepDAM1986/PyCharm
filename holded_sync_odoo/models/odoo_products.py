@@ -24,10 +24,12 @@ class Product(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_or_update_products(self, odoo_product, holded_products):
@@ -46,6 +48,7 @@ class Product(models.Model):
                 "purchasePrice": odoo_product.standard_price,
                 "cost": odoo_product.standard_price,
                 "barcode": odoo_product.barcode,
+                "tax": odoo_product.taxes_id.amount
             }
 
             holded_product = next((product for product in holded_products if product['sku'] ==
@@ -60,9 +63,7 @@ class Product(models.Model):
                     _logger.error("Error while updating product in Holded: %s", response.text)
             else:
                 response = requests.post(self.holded_api_url, headers=self.holded_api_headers, json=product_data)
-                if response.status_code == 200:
-                    holded_product_id = response.json().get('id')
-                    odoo_product.write({'holded_product_id': holded_product_id})
+                if response.status_code == 201:
                     _logger.info("Created product in Holded: %s", product_data)
                 else:
                     _logger.error("Error while creating product in Holded: %s", response.text)
@@ -110,9 +111,9 @@ class Product(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing products from Holded to Odoo: %s", e)
 
-    def sync_products_button(self):
-        try:
-            self.insert_products()
-            self.bring_products()
-        except Exception as e:
-            _logger.error("An error occurred while syncing products: %s", e)
+    # def sync_products_button(self):
+    #     try:
+    #         self.insert_products()
+    #         self.bring_products()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing products: %s", e)

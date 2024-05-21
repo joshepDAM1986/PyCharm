@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.actions.act_window" id="odoo_invoices_list_action">
-            <field name="name">Sync Invoices</field>
+            <field name="name">Holded Invoices</field>
             <field name="res_model">holded_sync_odoo.odoo_invoices</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -11,17 +11,22 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-        <menuitem id="odoo_invoices_menu" name="Odoo Invoices"
+
+        <menuitem id="sales_menu" name="Sales"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_invoices_list_action"
                   sequence="40"/>
+
+        <menuitem id="odoo_invoices_menu" name="Invoices"
+                  parent="sales_menu"
+                  action="odoo_invoices_list_action"/>
 
         <record id="view_odoo_invoices_tree" model="ir.ui.view">
             <field name="name">odoo_invoices.tree</field>
             <field name="model">holded_sync_odoo.odoo_invoices</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>
+<!--                    <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_invoice_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.actions.act_window" id="odoo_purchases_list_action">
-            <field name="name">Sync Purchases</field>
+            <field name="name">Holded Purchases</field>
             <field name="res_model">holded_sync_odoo.odoo_purchases</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -11,17 +11,21 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-        <menuitem id="odoo_purchases_menu" name="Odoo Purchases"
+        <menuitem id="purchases_menu" name="Purchases"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_purchases_list_action"
-                  sequence="60"/>
+                  sequence="50"/>
+
+        <menuitem id="odoo_purchases_menu" name="Purchases"
+                  parent="purchases_menu"
+                  action="odoo_purchases_list_action"/>
 
         <record id="view_odoo_purchases_tree" model="ir.ui.view">
             <field name="name">odoo_purchases.tree</field>
             <field name="model">holded_sync_odoo.odoo_purchases</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_purchases_button" string="Synchronize" type="object" class="btn-primary"/>
+<!--                    <button name="sync_purchases_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_purchase_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

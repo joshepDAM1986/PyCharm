@@ -20,10 +20,12 @@ class Treasury(models.Model):
 
     @property
     def holded_api_headers(self):
+        config = self.env['holded.sync.odoo.apikeyconfig'].search([], limit=1)
+        api_key = config.api_key if config else ''
         return {
             "accept": "application/json",
             "content-type": "application/json",
-            "key": "cf6626233fa4b33a99aa841dd37a11a9"
+            "key": api_key
         }
 
     def insert_or_update_treasury(self, odoo_treasury, holded_treasuries):
@@ -60,9 +62,7 @@ class Treasury(models.Model):
             else:
                 url_create_holded_treasury = "https://api.holded.com/api/invoicing/v1/treasury"
                 response = requests.post(self.holded_api_url, headers=self.holded_api_headers, json=treasury_data)
-                if response.status_code == 200:
-                    holded_treasury_id = response.json().get('id')
-                    odoo_treasury.write({'holded_treasury_id': holded_treasury_id})
+                if response.status_code == 201:
                     _logger.info("Created treasury in Holded: %s", treasury_data)
                 else:
                     _logger.error("Error while creating treasury in Holded: %s", response.text)
@@ -106,9 +106,9 @@ class Treasury(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing treasuries from Holded to Odoo: %s", e)
 
-    def sync_treasuries_button(self):
-        try:
-            self.insert_treasuries()
-            self.bring_treasuries()
-        except Exception as e:
-            _logger.error("An error occurred while syncing treasuries: %s", e)
+    # def sync_treasuries_button(self):
+    #     try:
+    #         self.insert_treasuries()
+    #         self.bring_treasuries()
+    #     except Exception as e:
+    #         _logger.error("An error occurred while syncing treasuries: %s", e)

@@ -2,7 +2,7 @@
 <odoo>
     <data>
         <record model="ir.actions.act_window" id="odoo_customers_list_action">
-            <field name="name">Odoo Customers</field>
+            <field name="name">Holded Contacts</field>
             <field name="res_model">holded_sync_odoo.odoo_customers</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
@@ -11,7 +11,7 @@
             </field>
         </record>
 
-        <menuitem id="odoo_customers_menu" name="Odoo Customers"
+        <menuitem id="odoo_customers_menu" name="Contacts"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_customers_list_action"
                   sequence="20"/>
@@ -21,7 +21,7 @@
             <field name="model">holded_sync_odoo.odoo_customers</field>
             <field name="arch" type="xml">
                 <tree>
-                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>
+<!--                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>-->
                     <field name="holded_customer_id"/>
                     <field name="name"/>
                     <field name="code"/>
