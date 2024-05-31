@@ -106,9 +106,8 @@ class Treasury(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing treasuries from Holded to Odoo: %s", e)
 
-    # def sync_treasuries_button(self):
-    #     try:
-    #         self.insert_treasuries()
-    #         self.bring_treasuries()
-    #     except Exception as e:
-    #         _logger.error("An error occurred while syncing treasuries: %s", e)
+    def sync_treasuries_button(self):
+        try:
+            self.bring_treasuries()
+        except Exception as e:
+            _logger.error("An error occurred while syncing treasuries: %s", e)

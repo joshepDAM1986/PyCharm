@@ -21,7 +21,7 @@
             <field name="model">holded_sync_odoo.odoo_treasuries</field>
             <field name="arch" type="xml">
                 <tree>
-<!--                    <button name="sync_treasuries_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <button name="sync_treasuries_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_treasury_id"/>
                     <field name="name"/>
                     <field name="bic"/>

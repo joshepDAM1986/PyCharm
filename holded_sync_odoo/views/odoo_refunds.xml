@@ -12,15 +12,16 @@
         </record>
 
         <menuitem id="odoo_refunds_menu" name="Purchases Refunds"
-                  parent="purchases_menu"
-                  action="odoo_refunds_list_action"/>
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_refunds_list_action"
+                  sequence="90"/>
 
         <record id="view_odoo_refunds_tree" model="ir.ui.view">
             <field name="name">odoo_refunds.tree</field>
             <field name="model">holded_sync_odoo.odoo_refunds</field>
             <field name="arch" type="xml">
                 <tree>
-<!--                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_refund_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

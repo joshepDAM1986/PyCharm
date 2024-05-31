@@ -68,7 +68,7 @@ class Purchase(models.Model):
                             "units": line.quantity,
                             "sku": line.product_id.code,
                             "subtotal": line.price_unit,
-                            "tax": sum(tax.amount for tax in line.tax_ids)
+                            "taxes": self.get_holded_taxes(line.tax_ids)
                         } for line in odoo_purchase.invoice_line_ids],
                     }
 
@@ -89,6 +89,14 @@ class Purchase(models.Model):
             self.bring_purchases_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
+
+    def get_holded_taxes(self, tax_ids):
+        holded_tax_keys = []
+        for tax in tax_ids:
+            odoo_tax = self.env['holded_sync_odoo.odoo_taxes'].search([('odoo_tax_id', '=', tax.id)], limit=1)
+            if odoo_tax and odoo_tax.holded_tax_key:
+                holded_tax_keys.append(odoo_tax.holded_tax_key)
+        return holded_tax_keys
 
     def pay_holded_purchases(self):
         try:
@@ -126,19 +134,21 @@ class Purchase(models.Model):
                     else:
                         holded_payment_treasury_id = None
 
-                    odoo_payments = self.env['account.payment'].search([('ref', '=', odoo_purchase.name),
-                                                                        ('state', '=', 'posted'),
-                                                                        ('payment_type', '=', 'outbound'),
-                                                                        ('partner_id.name', '=',
-                                                                         odoo_purchase.partner_id.name)])
+                    odoo_payments = self.env['account.payment'].search([
+                        ('ref', '=', odoo_purchase.name),
+                        ('state', '=', 'posted'),
+                        ('payment_type', '=', 'outbound'),
+                        ('partner_id.name', '=',
+                         odoo_purchase.partner_id.name)])
 
                     for odoo_payment in odoo_payments:
-                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
-                            ('documentNum', '=', odoo_purchase.name),
-                            ('paymentNum', '=', odoo_payment.name),
-                            ('contact_name', '=', odoo_payment.partner_id.name),
-                            ('amount', '=', odoo_payment.amount),
-                            ('date', '=', odoo_payment.date),
+                        desc = f"{odoo_payment.id} {odoo_purchase.id}"
+
+                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search([
+                            ('odoo_document_id', "=", odoo_purchase.id),
+                            ('odoo_payment_id', '=', odoo_payment.id),
+                            ('contactName', '=', odoo_payment.partner_id.name),
+                            ('amount', '=', -odoo_payment.amount),
                         ])
 
                         if holded_payment_exists:
@@ -146,15 +156,16 @@ class Purchase(models.Model):
                                          holded_purchase.invoiceNum)
                             continue
 
-                        invoice_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
-                                                            datetime.min.time())
-                        timestamp_date = int(invoice_datetime.timestamp())
+                        purchase_datetime = datetime.combine(odoo_payment.date or fields.Date.today(),
+                                                             datetime.min.time())
+                        timestamp_date = int(purchase_datetime.timestamp())
 
                         url = f"{self.holded_api_url}/{holded_url_id}/pay"
 
                         purchase_data = {
                             "amount": odoo_payment.amount,
                             "date": timestamp_date,
+                            "desc": desc
                         }
 
                         if odoo_payment.journal_id.type == 'bank':
@@ -165,15 +176,6 @@ class Purchase(models.Model):
                         if response.status_code == 200:
                             _logger.info(
                                 f"Payment {odoo_payment.id} successfully processed for Holded purchase {holded_url_id}")
-
-                            new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                'documentNum': odoo_purchase.name,
-                                'paymentNum': odoo_payment.name,
-                                'contact_name': odoo_purchase.partner_id.name,
-                                'amount': odoo_payment.amount,
-                                'date': odoo_payment.date,
-                            })
-
                         else:
                             _logger.error(
                                 f"Error processing payment {odoo_payment.id} for Holded purchase: {holded_url_id}: "
@@ -184,11 +186,13 @@ class Purchase(models.Model):
 
     def bring_purchases_odoo(self):
         try:
+            existing_purchases = self.env['holded_sync_odoo.odoo_purchases'].search([])
+            existing_purchases.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 purchases_list = response.json()
-                existing_purchases = self.env['holded_sync_odoo.odoo_purchases'].search([])
 
                 for purchase_data in purchases_list:
                     purchase_info = {
@@ -201,18 +205,14 @@ class Purchase(models.Model):
                         "holded_residual_payment": purchase_data.get("paymentsPending")
                     }
 
-                    purchase_exist = existing_purchases.filtered(
-                        lambda p: p.invoiceNum == purchase_info.get('invoiceNum'))
-                    if purchase_exist:
-                        purchase_exist.write(purchase_info)
-                    else:
-                        self.env['holded_sync_odoo.odoo_purchases'].create(purchase_info)
+                    self.env['holded_sync_odoo.odoo_purchases'].create(purchase_info)
+
         except Exception as e:
             _logger.error("An error occurred while bringing purchases from Holded to Odoo: %s", e)
 
-    # def sync_purchases_button(self):
-    #     try:
-    #         self.insert_holded_purchases()
-    #         self.pay_holded_purchases()
-    #     except Exception as e:
-    #         _logger.error("An error occurred while syncing purchases: %s", e)
+
+    def sync_purchases_button(self):
+        try:
+            self.bring_purchases_odoo()
+        except Exception as e:
+            _logger.error("An error occurred while syncing purchases: %s", e)

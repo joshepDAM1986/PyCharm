@@ -11,22 +11,17 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
-
-        <menuitem id="sales_menu" name="Sales"
+        <menuitem id="odoo_invoices_menu" name="Invoices"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_invoices_list_action"
-                  sequence="40"/>
-
-        <menuitem id="odoo_invoices_menu" name="Invoices"
-                  parent="sales_menu"
-                  action="odoo_invoices_list_action"/>
+                  sequence="60"/>
 
         <record id="view_odoo_invoices_tree" model="ir.ui.view">
             <field name="name">odoo_invoices.tree</field>
             <field name="model">holded_sync_odoo.odoo_invoices</field>
             <field name="arch" type="xml">
                 <tree>
-<!--                    <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <button name="sync_invoices_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_invoice_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

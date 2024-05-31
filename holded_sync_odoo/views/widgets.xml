@@ -1,0 +1,3 @@
+<template name="sync_payments_button_widget" t-scope="button">
+    <button name="sync_payments_button" string="Synchronize" type="object" class="btn-primary"/>
+</template>

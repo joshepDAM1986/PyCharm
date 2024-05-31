@@ -21,7 +21,7 @@
             <field name="model">holded_sync_odoo.odoo_customers</field>
             <field name="arch" type="xml">
                 <tree>
-<!--                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_customer_id"/>
                     <field name="name"/>
                     <field name="code"/>

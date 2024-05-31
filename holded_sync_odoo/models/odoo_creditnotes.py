@@ -3,6 +3,7 @@ from datetime import datetime
 import requests
 import logging
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -17,6 +18,7 @@ class Creditnotes(models.Model):
     holded_amount_total = fields.Float(string="Total")
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
+    holded_payment_id = fields.Char(string="Holded Payment ID")
 
     @property
     def holded_api_url(self):
@@ -61,14 +63,6 @@ class Creditnotes(models.Model):
 
                     original_invoice = odoo_creditnotes.ref
 
-                    invoice_taxes = []
-                    for line in odoo_creditnotes.invoice_line_ids:
-                        tax_names = []
-                        for tax in line.tax_ids:
-                            tax_name = "s_" + tax.amount_type + "_" + str(int(tax.amount * 100))
-                            tax_names.append(tax_name)
-                        invoice_taxes.append(",".join(tax_names))
-
                     creditnote_data = {
                         "invoiceNum": odoo_creditnotes.name,
                         "contactCode": contact_code,
@@ -78,7 +72,7 @@ class Creditnotes(models.Model):
                             "units": line.quantity,
                             "sku": line.product_id.code,
                             "subtotal": line.price_unit,
-                            "tax": sum(tax.amount for tax in line.tax_ids),
+                            "taxes": self.get_holded_taxes(line.tax_ids)
                         } for line in odoo_creditnotes.invoice_line_ids],
                         "customFields": [{
                             "Factura": original_invoice
@@ -104,10 +98,17 @@ class Creditnotes(models.Model):
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
+    def get_holded_taxes(self, tax_ids):
+        holded_tax_keys = []
+        for tax in tax_ids:
+            odoo_tax = self.env['holded_sync_odoo.odoo_taxes'].search([('odoo_tax_id', '=', tax.id)], limit=1)
+            if odoo_tax and odoo_tax.holded_tax_key:
+                holded_tax_keys.append(odoo_tax.holded_tax_key)
+        return holded_tax_keys
+
     def pay_holded_creditnotes(self):
         try:
             odoo_creditnotes = self.env['account.move'].search([('payment_state', '!=', 'not_paid')])
-
             batch_size = 100
             total_creditnotes = len(odoo_creditnotes)
             for index in range(0, total_creditnotes, batch_size):
@@ -115,7 +116,6 @@ class Creditnotes(models.Model):
                 self.process_payment_batch(batch_creditnotes)
 
             self.bring_creditnotes_odoo()
-
         except Exception as e:
             _logger.error(f"An error occurred while processing payments in Holded: {e}")
 
@@ -140,20 +140,22 @@ class Creditnotes(models.Model):
                     else:
                         holded_payment_treasury_id = None
 
-                    odoo_payments = self.env['account.payment'].search([
-                                                                        ('state', '=', 'posted'),
-                                                                        ('payment_type', '=', 'outbound'),
-                                                                        ('partner_id.name', '=',
-                                                                         odoo_creditnotes.partner_id.name)
-                    ])
+                    odoo_payments = (self.env['account.payment'].search([
+                        ('ref', '=', odoo_creditnotes.ref),
+                        ('state', '=', 'posted'),
+                        ('payment_type', '=', 'outbound'),
+                        ('partner_id.name', '=',
+                         odoo_creditnotes.partner_id.name),
+                    ]))
 
                     for odoo_payment in odoo_payments:
-                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search_count([
-                            ('documentNum', '=', odoo_creditnotes.name),
-                            ('paymentNum', '=', odoo_payment.name),
-                            ('contact_name', '=', odoo_payment.partner_id.name),
-                            ('amount', '=', odoo_payment.amount),
-                            ('date', '=', odoo_payment.date),
+                        desc = f"{odoo_payment.id} {odoo_creditnotes.id}"
+
+                        holded_payment_exists = self.env['holded_sync_odoo.odoo_payments'].search([
+                            ('odoo_document_id', "=", odoo_creditnotes.id),
+                            ('odoo_payment_id', '=', odoo_payment.id),
+                            ('contactName', '=', odoo_payment.partner_id.name),
+                            ('amount', '=', -odoo_payment.amount),
                         ])
 
                         if holded_payment_exists:
@@ -170,6 +172,7 @@ class Creditnotes(models.Model):
                         creditnote_data = {
                             "amount": odoo_payment.amount,
                             "date": timestamp_date,
+                            "desc": desc
                         }
 
                         if odoo_payment.journal_id.type == "bank":
@@ -180,29 +183,21 @@ class Creditnotes(models.Model):
                         if response.status_code == 200:
                             _logger.info(
                                 f"Payment {odoo_payment.id} successfully processed for Holded credit note {holded_url_id}")
-
-                            new_payment = self.env['holded_sync_odoo.odoo_payments'].create({
-                                'documentNum': odoo_creditnotes.name,
-                                'paymentNum': odoo_payment.name,
-                                'contact_name': odoo_creditnotes.partner_id.name,
-                                'amount': odoo_payment.amount,
-                                'date': odoo_payment.date,
-                            })
-
                         else:
                             _logger.error(
                                 f"Error processing payment {odoo_payment.id} for Holded credit note {holded_url_id}: {response.text}")
-
         except Exception as e:
             _logger.error(f"An error occurred while processing payment batch: {e}")
 
     def bring_creditnotes_odoo(self):
         try:
+            existing_creditnotes = self.env['holded_sync_odoo.odoo_creditnotes'].search([])
+            existing_creditnotes.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
                 creditnotes_list = response.json()
-                existing_creditnotes = self.env['holded_sync_odoo.odoo_creditnotes'].search([])
 
                 for creditnote_data in creditnotes_list:
                     creditnote_info = {
@@ -215,18 +210,12 @@ class Creditnotes(models.Model):
                         "holded_residual_payment": creditnote_data.get("paymentsPending")
                     }
 
-                    creditnote_exist = existing_creditnotes.filtered(
-                        lambda i: i.invoiceNum == creditnote_info.get('invoiceNum'))
-                    if creditnote_exist:
-                        creditnote_exist.write(creditnote_info)
-                    else:
-                        self.env['holded_sync_odoo.odoo_creditnotes'].create(creditnote_info)
+                    self.env['holded_sync_odoo.odoo_creditnotes'].create(creditnote_info)
         except Exception as e:
             _logger.error("An error occurred while bringing credit notes from Holded to Odoo: %s", e)
 
-    # def sync_creditnotes_button(self):
-    #     try:
-    #         self.insert_holded_creditnotes()
-    #         self.pay_holded_creditnotes()
-    #     except Exception as e:
-    #         _logger.error("An error occurred while syncing credit notes: %s", e)
+    def sync_creditnotes_button(self):
+        try:
+            self.bring_creditnotes_odoo()
+        except Exception as e:
+            _logger.error("An error occurred while syncing credit notes: %s", e)

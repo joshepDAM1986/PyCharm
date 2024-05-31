@@ -2,6 +2,7 @@
 <odoo>
     <data>
 
+        <!-- Acción de ventana para la lista de pagos -->
         <record model="ir.actions.act_window" id="odoo_payments_list_action">
             <field name="name">Holded Payments</field>
             <field name="res_model">holded_sync_odoo.odoo_payments</field>
@@ -12,34 +13,48 @@
             <field name="context">{'button_sync_visible': True}</field>
         </record>
 
+        <!-- Menú para acceder a los pagos -->
         <menuitem id="odoo_payments_menu" name="Payments"
                   parent="main_holded_sync_odoo_menu"
                   action="odoo_payments_list_action"
-                  sequence="60"/>
+                  sequence="50"/>
 
+        <!-- Vista de árbol para el modelo de pagos -->
         <record id="view_odoo_payments_tree" model="ir.ui.view">
             <field name="name">odoo_payments.tree</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="documentNum"/>
-                    <field name="paymentNum"/>
-                    <field name="contact_name"/>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
+                    <button name="sync_payments_button" string="Synchronize" type="object" class="btn-primary"/>
+                </tree>
+                <tree>
+                    <field name="odoo_document_id"/>
+                    <field name="odoo_payment_id"/>
+                    <field name="holded_payment_id"/>
+                    <field name="bankId"/>
+                    <field name="contactId"/>
+                    <field name="contactName"/>
                     <field name="amount"/>
                     <field name="date"/>
+                    <field name="documentId"/>
                 </tree>
             </field>
         </record>
 
-        <record model="ir.ui.view" id="view_odoo_payments_search">
+
+        <!-- Vista de búsqueda para el modelo de pagos -->
+        <record id="view_odoo_payments_search" model="ir.ui.view">
             <field name="name">odoo_payments.search</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
             <field name="arch" type="xml">
                 <search>
+                    <!-- Se puede añadir filtros de búsqueda aquí si es necesario -->
                 </search>
             </field>
         </record>
 
+        <!-- Vista de formulario para el modelo de pagos -->
         <record id="view_sync_payment_form" model="ir.ui.view">
             <field name="name">odoo_payments.form</field>
             <field name="model">holded_sync_odoo.odoo_payments</field>
@@ -47,15 +62,17 @@
                 <form>
                     <sheet>
                         <group>
-                            <field name="documentNum" readonly="1"/>
-                            <field name="paymentNum" readonly="1"/>
-                            <field name="contact_name" readonly="1"/>
+                            <field name="odoo_document_id" readonly="1"/>
+                            <field name="odoo_payment_id" readonly="1"/>
+                            <field name="holded_payment_id" readonly="1"/>
+                            <field name="bankId" readonly="1"/>
+                            <field name="contactId" readonly="1"/>
+                            <field name="contactName" readonly="1"/>
                             <field name="amount" readonly="1"/>
                             <field name="date" readonly="1"/>
+                            <field name="documentId" readonly="1"/>
                         </group>
-
                         <notebook>
-
                         </notebook>
                     </sheet>
                 </form>

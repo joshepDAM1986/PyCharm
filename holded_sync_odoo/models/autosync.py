@@ -18,18 +18,42 @@ class Autosync(models.Model):
         treasuries_model.insert_treasuries()
         treasuries_model.bring_treasuries()
 
+        taxes_model = self.env['holded_sync_odoo.odoo_taxes']
+        treasuries_model.bring_treasuries()
+        taxes_model.link_taxes()
+
+        payments_model = self.env['holded_sync_odoo.odoo_payments']
+
         invoices_model = self.env['holded_sync_odoo.odoo_invoices']
         invoices_model.insert_holded_invoices()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
         invoices_model.pay_holded_invoices()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
 
         creditnotes_model = self.env['holded_sync_odoo.odoo_creditnotes']
         creditnotes_model.insert_holded_creditnotes()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
         creditnotes_model.pay_holded_creditnotes()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
 
         purchases_model = self.env['holded_sync_odoo.odoo_purchases']
         purchases_model.insert_holded_purchases()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
         purchases_model.pay_holded_purchases()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
 
         refunds_model = self.env['holded_sync_odoo.odoo_refunds']
         refunds_model.insert_holded_refunds()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
         refunds_model.pay_holded_refunds()
+        payments_model.clear_payments()
+        payments_model.bring_payments()
+
+

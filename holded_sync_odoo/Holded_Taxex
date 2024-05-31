@@ -1,0 +1,93 @@
+Nombre: Impuesto 42, Key: tax_42_purchases
+Nombre: Impuesto 16, Key: tax_16_purchases
+Nombre: Impuesto 31, Key: tax_31_purchases
+Nombre: Impuesto 6, Key: tax_6_purchases
+Nombre: Impuesto 35, Key: tax_35_sales
+Nombre: Impuesto 31, Key: tax_31_sales
+Nombre: Impuesto 25, Key: tax_25_sales
+Nombre: Impuesto 21.62, Key: tax_2162_sales
+Nombre: Impuesto 2, Key: tax_2_sales
+Nombre: IVA 21%, Key: s_iva_21
+Nombre: IVA 10%, Key: s_iva_10
+Nombre: IVA 4%, Key: s_iva_4
+Nombre: IVA 5%, Key: s_iva_5
+Nombre: Bienes usados 21%, Key: s_iva_bu_21
+Nombre: Bienes usados 10%, Key: s_iva_bu_10
+Nombre: Bienes usados 4%, Key: s_iva_bu_4
+Nombre: Exenta, Key: s_iva_exento
+Nombre: No sujeto, Key: s_iva_nosujeto
+Nombre: Iva Intracomunitario Bienes, Key: s_iva_intrab
+Nombre: Iva Intracomunitario Servicio, Key: s_iva_intras
+Nombre: Exportación, Key: s_iva_export
+Nombre: Inv. Suj. Pasivo, Key: s_iva_invsuj
+Nombre: IVA 21%, Key: p_iva_21
+Nombre: IVA 10%, Key: p_iva_10
+Nombre: IVA 4%, Key: p_iva_4
+Nombre: IVA 5%, Key: p_iva_5
+Nombre: IVA bien de inversión 21%, Key: p_iva_bi_21
+Nombre: IVA bien de inversión 10%, Key: p_iva_bi_10
+Nombre: IVA bien de inversión 4%, Key: p_iva_bi_4
+Nombre: Adq. Intracom. de bienes de inversión 21%, Key: p_iva_adqintrabi_21
+Nombre: Adq. Intracom. de bienes de inversión 21% (+), Key: p_iva_adqintrabi_21_1
+Nombre: Adq. Intracom. de bienes de inversión 21% (-), Key: p_iva_adqintrabi_21_2
+Nombre: Adq. Intracom. de bienes de inversión 10%, Key: p_iva_adqintrabi_10
+Nombre: Adq. Intracom. de bienes de inversión 10% (+), Key: p_iva_adqintrabi_10_1
+Nombre: Adq. Intracom. de bienes de inversión 10% (-), Key: p_iva_adqintrabi_10_2
+Nombre: Adq. Intracom. de bienes de inversión 4%, Key: p_iva_adqintrabi_4
+Nombre: Adq. Intracom. de bienes de inversión 4% (+), Key: p_iva_adqintrabi_4_1
+Nombre: Adq. Intracom. de bienes de inversión 4% (-), Key: p_iva_adqintrabi_4_2
+Nombre: Adq. Intracom. de bienes 21%, Key: p_iva_adqintrab_21
+Nombre: Adq. Intracom. de bienes 21% (+), Key: p_iva_adqintrab_21_1
+Nombre: Adq. Intracom. de bienes 21% (-), Key: p_iva_adqintrab_21_2
+Nombre: Adq. Intracom. de bienes 10%, Key: p_iva_adqintrab_10
+Nombre: Adq. Intracom. de bienes 10% (+), Key: p_iva_adqintrab_10_1
+Nombre: Adq. Intracom. de bienes 10% (-), Key: p_iva_adqintrab_10_2
+Nombre: Adq. Intracom. de bienes 4%, Key: p_iva_adqintrab_4
+Nombre: Adq. Intracom. de bienes 4% (+), Key: p_iva_adqintrab_4_1
+Nombre: Adq. Intracom. de bienes 4% (-), Key: p_iva_adqintrab_4_2
+Nombre: Adq. Intracom. de servicios 21%, Key: p_iva_adqintras_21
+Nombre: Adq. Intracom. de servicios 21% (+), Key: p_iva_adqintras_21_1
+Nombre: Adq. Intracom. de servicios 21% (-), Key: p_iva_adqintras_21_2
+Nombre: Adq. Intracom. de servicios 10%, Key: p_iva_adqintras_10
+Nombre: Adq. Intracom. de servicios 10% (+), Key: p_iva_adqintras_10_1
+Nombre: Adq. Intracom. de servicios 10% (-), Key: p_iva_adqintras_10_2
+Nombre: Adq. Intracom. de servicios 4%, Key: p_iva_adqintras_4
+Nombre: Adq. Intracom. de servicios 4% (+), Key: p_iva_adqintras_4_1
+Nombre: Adq. Intracom. de servicios 4% (-), Key: p_iva_adqintras_4_2
+Nombre: Inv. Suj. Pasivo, Key: p_iva_invsuj
+Nombre: Inv. Suj. Pasivo (+), Key: p_iva_invsuj_1
+Nombre: Inv. Suj. Pasivo (-), Key: p_iva_invsuj_2
+Nombre: Importación 21%, Key: p_iva_imp_21
+Nombre: Importación 10%, Key: p_iva_imp_10
+Nombre: Importación 4%, Key: p_iva_imp_4
+Nombre: Imp. bienes de inversión 21%, Key: p_iva_impbi_21
+Nombre: Imp. bienes de inversión 21%, Key: p_iva_impbi_21
+Nombre: Imp. bienes de inversión 10%, Key: p_iva_impbi_10
+Nombre: Imp. bienes de inversión 4%, Key: p_iva_impbi_4
+Nombre: Exención (art.20), Key: p_iva_exento
+Nombre: Retención 19%, Key: s_ret_19
+Nombre: Retención 15%, Key: s_ret_15
+Nombre: Retención 7%, Key: s_ret_7
+Nombre: Retención 19% capital mobiliario, Key: p_ret_19
+Nombre: Retención 15%, Key: p_ret_15
+Nombre: Retención 7%, Key: p_ret_7
+Nombre: Retención 19% administradores, Key: p_retadm_19
+Nombre: Retención 35% administradores, Key: p_retadm_35
+Nombre: Retención 15% cursos o conferencias, Key: p_ret_curs_15
+Nombre: Retención 19% capital inmobiliario, Key: p_retrent_19
+Nombre: Act. agrícola en general 2%, Key: p_ret_aagg_2
+Nombre: Act. porcina y avicultura 1%, Key: p_ret_aepa_1
+Nombre: Act. forestal 2%, Key: p_ret_af_2
+Nombre: Act. empresariales est. objetiva 1%, Key: p_ret_daeo_1
+Nombre: Act. económicas cesión derechos de imagen 24%, Key: p_ret_dimg_24
+Nombre: Salario empleados, Key: e_salario
+Nombre: Retención empleados, Key: e_retencion
+Nombre: Dietas empleados, Key: e_dietas
+Nombre: Salario en especie empleados, Key: e_especies
+Nombre: Retención salario en especie, Key: e_ret_especies
+Nombre: Retención 19% administradores, Key: e_ret_19
+Nombre: Retención 35% administradores, Key: e_ret_35
+Nombre: REC 5,2%, Key: s_rec_52
+Nombre: REC 1,4%, Key: s_rec_14
+Nombre: REC 0,5%, Key: s_rec_05
+Nombre: REC 1,75%, Key: s_rec_175

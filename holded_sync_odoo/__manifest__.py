@@ -20,6 +20,7 @@
         'views/odoo_treasuries.xml',
         'views/odoo_creditnotes.xml',
         'views/odoo_refunds.xml',
+        'views/odoo_taxes.xml',
         'views/apikeyconfig.xml',
         'views/autosync.xml',
     ],

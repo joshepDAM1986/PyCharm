@@ -33,9 +33,9 @@
             <field name="target">current</field>
         </record>
 
-        <menuitem id="menu_holded_sync_odoo_config" name="Configuration"
+        <menuitem id="menu_holded_sync_odoo_apikeyconfig" name="Configuration"
                   parent="main_holded_sync_odoo_menu"
                   action="action_holded_sync_odoo_apikeyconfig"
-                  sequence="70"/>
+                  sequence="100"/>
     </data>
 </odoo>

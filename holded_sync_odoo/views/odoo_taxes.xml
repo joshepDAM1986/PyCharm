@@ -1,0 +1,55 @@
+<odoo>
+    <data>
+        <record id="view_holded_sync_odoo_odoo_taxes_tree" model="ir.ui.view">
+            <field name="name">holded_sync_odoo.odoo_taxes.tree</field>
+            <field name="model">holded_sync_odoo.odoo_taxes</field>
+            <field name="arch" type="xml">
+                <tree string="Taxes Attachment">
+                    <button name="sync_taxes_button" string="Synchronize" type="object" class="btn-primary"/>
+                    <field name="odoo_tax_id"/>
+                    <field name="holded_tax_id"/>
+                    <field name="holded_tax_key"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_holded_sync_odoo_odoo_taxes_form" model="ir.ui.view">
+            <field name="name">holded_sync_odoo.odoo_taxes.form</field>
+            <field name="model">holded_sync_odoo.odoo_taxes</field>
+            <field name="arch" type="xml">
+                <form string="Taxes Attachment">
+                    <group>
+                        <field name="odoo_tax_id"/>
+                        <field name="holded_tax_id"/>
+                        <field name="holded_tax_key" readonly="1"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_odoo_taxes_search">
+            <field name="name">odoo_taxes.search</field>
+            <field name="model">holded_sync_odoo.odoo_taxes</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="odoo_tax_id"/>
+                    <field name="holded_tax_id"/>
+                    <field name="holded_tax_key"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_holded_sync_odoo_odoo_taxes" model="ir.actions.act_window">
+            <field name="name">Taxes</field>
+            <field name="res_model">holded_sync_odoo.odoo_taxes</field>
+            <field name="view_mode">tree,form</field>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem id="menu_holded_sync_odoo_config" name="Taxes"
+                  parent="main_holded_sync_odoo_menu"
+                  action="action_holded_sync_odoo_odoo_taxes"
+                  sequence="40"/>
+
+    </data>
+</odoo>

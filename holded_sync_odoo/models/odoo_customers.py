@@ -94,22 +94,25 @@ class Customer(models.Model):
 
     def insert_customers(self):
         try:
+            self.bring_customers()
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
             holded_contacts = response.json()
 
             odoo_customers = self.env['res.partner'].search([])
             for odoo_customer in odoo_customers:
                 self.insert_or_update_customer(odoo_customer, holded_contacts)
-
         except Exception as e:
             _logger.error("An error occurred while inserting customers in Holded: %s", e)
 
     def bring_customers(self):
         try:
+            existing_customers = self.env['holded_sync_odoo.odoo_customers'].search([])
+            existing_customers.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
+
             if response.status_code == 200:
                 customers_list = response.json()
-                odoo_customers = self.env['holded_sync_odoo.odoo_customers'].search([])
 
                 for customer_data in customers_list:
                     customer_info = {
@@ -129,19 +132,13 @@ class Customer(models.Model):
                         "tags": ','.join(customer_data.get('tags', [])),
                     }
 
-                    customer_exist = odoo_customers.filtered(lambda c: c.code == customer_info.get('code'))
-                    if not customer_exist:
-                        self.env['holded_sync_odoo.odoo_customers'].create(customer_info)
-                    else:
-                        customer_exist.write(customer_info)
-            else:
-                _logger.error("Error while fetching customers from Holded: %s", response.text)
+                    self.env['holded_sync_odoo.odoo_customers'].create(customer_info)
+
         except Exception as e:
             _logger.error("An error occurred while bringing customers from Holded to Odoo: %s", e)
 
-    # def sync_customers_button(self):
-    #     try:
-    #         self.insert_customers()
-    #         self.bring_customers()
-    #     except Exception as e:
-    #         _logger.error("An error occurred while syncing customers: %s", e)
+    def sync_customers_button(self):
+        try:
+            self.bring_customers()
+        except Exception as e:
+            _logger.error("An error occurred while syncing customers: %s", e)

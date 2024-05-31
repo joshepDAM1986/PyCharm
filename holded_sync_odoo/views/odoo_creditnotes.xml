@@ -12,15 +12,16 @@
         </record>
 
         <menuitem id="odoo_creditnotes_menu" name="Credit Notes"
-                  parent="sales_menu"
-                  action="odoo_creditnotes_list_action"/>
+                  parent="main_holded_sync_odoo_menu"
+                  action="odoo_creditnotes_list_action"
+                  sequence="70"/>
 
         <record id="view_odoo_creditnotes_tree" model="ir.ui.view">
             <field name="name">odoo_creditnotes.tree</field>
             <field name="model">holded_sync_odoo.odoo_creditnotes</field>
             <field name="arch" type="xml">
                 <tree>
-<!--                    <button name="sync_creditnotes_button" string="Synchronize" type="object" class="btn-primary"/>-->
+                    <button name="sync_creditnotes_button" string="Synchronize" type="object" class="btn-primary"/>
                     <field name="holded_creditnote_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

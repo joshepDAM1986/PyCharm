@@ -1,3 +1,4 @@
+
 from odoo import models, fields
 import requests
 import logging
@@ -34,12 +35,6 @@ class Product(models.Model):
 
     def insert_or_update_products(self, odoo_product, holded_products):
         try:
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "key": "cf6626233fa4b33a99aa841dd37a11a9"
-            }
-
             product_data = {
                 "sku": odoo_product.code,
                 "kind": "simple",
@@ -111,9 +106,8 @@ class Product(models.Model):
         except Exception as e:
             _logger.error("An error occurred while bringing products from Holded to Odoo: %s", e)
 
-    # def sync_products_button(self):
-    #     try:
-    #         self.insert_products()
-    #         self.bring_products()
-    #     except Exception as e:
-    #         _logger.error("An error occurred while syncing products: %s", e)
+    def sync_products_button(self):
+        try:
+            self.bring_products()
+        except Exception as e:
+            _logger.error("An error occurred while syncing products: %s", e)
