@@ -1,27 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record model="ir.actions.act_window" id="odoo_refunds_list_action">
-            <field name="name">Holded Purchase's Refunds</field>
-            <field name="res_model">holded_sync_odoo.odoo_refunds</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">New Refund</p>
+
+        <record id="action_server_sync_and_open_refunds" model="ir.actions.server">
+            <field name="name">Sync and Open Refunds</field>
+            <field name="model_id" ref="model_holded_sync_odoo_odoo_refunds"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env['holded_sync_odoo.odoo_refunds'].sync_refunds_button()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Holded Refunds',
+    'res_model': 'holded_sync_odoo.odoo_refunds',
+    'view_mode': 'tree,form',
+    'target': 'current',
+}
             </field>
-            <field name="context">{'button_sync_visible': True}</field>
         </record>
+
+<!--        <record model="ir.actions.act_window" id="odoo_refunds_list_action">-->
+<!--            <field name="name">Holded Purchase's Refunds</field>-->
+<!--            <field name="res_model">holded_sync_odoo.odoo_refunds</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">New Refund</p>-->
+<!--            </field>-->
+<!--            <field name="context">{'button_sync_visible': True}</field>-->
+<!--        </record>-->
 
         <menuitem id="odoo_refunds_menu" name="Purchases Refunds"
                   parent="main_holded_sync_odoo_menu"
-                  action="odoo_refunds_list_action"
+                  action="action_server_sync_and_open_refunds"
                   sequence="90"/>
 
         <record id="view_odoo_refunds_tree" model="ir.ui.view">
             <field name="name">odoo_refunds.tree</field>
             <field name="model">holded_sync_odoo.odoo_refunds</field>
             <field name="arch" type="xml">
-                <tree>
-                    <button name="sync_refunds_button" string="Synchronize" type="object" class="btn-primary"/>
+                <tree create="false">
+                    <header>
+                        <button name="sync_refunds_button" string="Synchronize" type="object" class="oe_highlight"/>
+                    </header>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
                     <field name="holded_refund_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

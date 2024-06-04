@@ -18,6 +18,7 @@ class Product(models.Model):
     purchasePrice = fields.Float(string='Purchase Price')
     cost = fields.Float(string='Cost Price')
     barcode = fields.Char(string='Barcode')
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -80,7 +81,12 @@ class Product(models.Model):
 
     def bring_products(self):
         try:
+
+            existing_customers = self.env['holded_sync_odoo.odoo_products'].search([])
+            existing_customers.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
+
             if response.status_code == 200:
                 product_list = response.json()
                 odoo_products = self.env['holded_sync_odoo.odoo_products'].search([])
@@ -103,6 +109,9 @@ class Product(models.Model):
                         product_exist.write(product_info)
             else:
                 _logger.error("Error while fetching products from Holded: %s", response.text)
+
+            self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
+
         except Exception as e:
             _logger.error("An error occurred while bringing products from Holded to Odoo: %s", e)
 

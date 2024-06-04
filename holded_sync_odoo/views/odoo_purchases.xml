@@ -1,27 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record model="ir.actions.act_window" id="odoo_purchases_list_action">
-            <field name="name">Holded Purchases</field>
-            <field name="res_model">holded_sync_odoo.odoo_purchases</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">New Purchase</p>
+
+        <record id="action_server_sync_and_open_purchases" model="ir.actions.server">
+            <field name="name">Sync and Open Purchases</field>
+            <field name="model_id" ref="model_holded_sync_odoo_odoo_purchases"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env['holded_sync_odoo.odoo_purchases'].sync_purchases_button()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Holded Purchases',
+    'res_model': 'holded_sync_odoo.odoo_purchases',
+    'view_mode': 'tree,form',
+    'target': 'current',
+}
             </field>
-            <field name="context">{'button_sync_visible': True}</field>
         </record>
+
+<!--        <record model="ir.actions.act_window" id="odoo_purchases_list_action">-->
+<!--            <field name="name">Holded Purchases</field>-->
+<!--            <field name="res_model">holded_sync_odoo.odoo_purchases</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">New Purchase</p>-->
+<!--            </field>-->
+<!--            <field name="context">{'button_sync_visible': True}</field>-->
+<!--        </record>-->
 
         <menuitem id="odoo_purchases_menu" name="Purchases"
                   parent="main_holded_sync_odoo_menu"
-                  action="odoo_purchases_list_action"
+                  action="action_server_sync_and_open_purchases"
                   sequence="80"/>
 
         <record id="view_odoo_purchases_tree" model="ir.ui.view">
             <field name="name">odoo_purchases.tree</field>
             <field name="model">holded_sync_odoo.odoo_purchases</field>
             <field name="arch" type="xml">
-                <tree>
-                    <button name="sync_purchases_button" string="Synchronize" type="object" class="btn-primary"/>
+                <tree create="false">
+                    <header>
+                        <button name="sync_purchases_button" string="Synchronize" type="object" class="oe_highlight"/>
+                    </header>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
                     <field name="holded_purchase_id"/>
                     <field name="contactName"/>
                     <field name="invoiceNum"/>

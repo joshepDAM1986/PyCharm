@@ -23,6 +23,7 @@ class Customer(models.Model):
     country = fields.Char(string='Country')
     countryCode = fields.Char(string='Country Code')
     tags = fields.Char(string='Tags')
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -133,6 +134,8 @@ class Customer(models.Model):
                     }
 
                     self.env['holded_sync_odoo.odoo_customers'].create(customer_info)
+
+                self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
 
         except Exception as e:
             _logger.error("An error occurred while bringing customers from Holded to Odoo: %s", e)

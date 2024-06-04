@@ -17,6 +17,7 @@ class Purchase(models.Model):
     holded_amount_total = fields.Float(string="Total")
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -41,6 +42,7 @@ class Purchase(models.Model):
             for index in range(0, total_purchases, batch_size):
                 batch_purchases = odoo_purchases[index:index + batch_size]
                 self.process_batch(batch_purchases)
+            self.bring_purchases_odoo()
         except Exception as e:
             _logger.error("An error occurred inserting purchases into Holded: %s", e)
 
@@ -86,7 +88,6 @@ class Purchase(models.Model):
                             _logger.error("Error processing purchase %s in Holded: %s", odoo_purchase.id, response.text)
                     else:
                         _logger.info("Purchase %s already exists in Holded", odoo_purchase.name)
-            self.bring_purchases_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
@@ -107,9 +108,6 @@ class Purchase(models.Model):
             for index in range(0, total_purchases, batch_size):
                 batch_purchases = odoo_purchases[index:index + batch_size]
                 self.process_payment_batch(batch_purchases)
-
-            self.bring_purchases_odoo()
-
         except Exception as e:
             _logger.error(f"An error occurred while paying purchases in Holded: {e}")
 
@@ -207,9 +205,10 @@ class Purchase(models.Model):
 
                     self.env['holded_sync_odoo.odoo_purchases'].create(purchase_info)
 
+                self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
+
         except Exception as e:
             _logger.error("An error occurred while bringing purchases from Holded to Odoo: %s", e)
-
 
     def sync_purchases_button(self):
         try:

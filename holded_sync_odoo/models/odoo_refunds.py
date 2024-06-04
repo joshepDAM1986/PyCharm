@@ -18,6 +18,7 @@ class Refunds(models.Model):
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
     holded_payment_id = fields.Char(string="Holded Payment ID")
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -42,6 +43,7 @@ class Refunds(models.Model):
             for index in range(0, total_refunds, batch_size):
                 batch_refunds = odoo_refunds[index:index + batch_size]
                 self.process_batch(batch_refunds)
+            self.bring_refunds_odoo()
         except Exception as e:
             _logger.error("An error occurred inserting refunds into Holded: %s", e)
 
@@ -93,7 +95,6 @@ class Refunds(models.Model):
                                           response.text)
                     else:
                         _logger.info("Refund %s already exists in Holded", odoo_refunds.name)
-            self.bring_refunds_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
@@ -114,9 +115,6 @@ class Refunds(models.Model):
             for index in range(0, total_refunds, batch_size):
                 batch_refunds = odoo_refunds[index:index + batch_size]
                 self.process_payment_batch(batch_refunds)
-
-            self.bring_refunds_odoo()
-
         except Exception as e:
             _logger.error(f"An error occurred while processing payments in Holded: {e}")
 
@@ -141,13 +139,6 @@ class Refunds(models.Model):
                     else:
                         holded_payment_treasury_id = None
 
-                    # odoo_payments = (self.env['account.move'].search([
-                    #     ('state', '=', 'posted'),
-                    #     ('payment_type', '=', 'inbound'),
-                    #     ('partner_id.name', '=',
-                    #      odoo_refunds.partner_id.name)
-                    # ]))
-
                     odoo_refunds = self.env['account.move'].search([
                         ('name', '=', odoo_refunds.name),
                         ('state', '=', 'posted'),
@@ -155,8 +146,6 @@ class Refunds(models.Model):
                     ])
 
                     for refund in odoo_refunds:
-                        _logger.info("REFUND: %s" % (refund._get_move_display_name()))
-
                         for odoo_payment in refund._get_reconciled_payments():
                             desc = f"{odoo_payment.id} {odoo_refunds.id}"
 
@@ -221,6 +210,8 @@ class Refunds(models.Model):
                     }
 
                     self.env['holded_sync_odoo.odoo_refunds'].create(refund_info)
+
+                self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
 
         except Exception as e:
             _logger.error("An error occurred while bringing refunds from Holded to Odoo: %s", e)

@@ -1,27 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record model="ir.actions.act_window" id="odoo_customers_list_action">
-            <field name="name">Holded Contacts</field>
-            <field name="res_model">holded_sync_odoo.odoo_customers</field>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">New Customer
-                </p>
+
+        <record id="action_server_sync_and_open_customers" model="ir.actions.server">
+            <field name="name">Sync and Open Customers</field>
+            <field name="model_id" ref="model_holded_sync_odoo_odoo_customers"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env['holded_sync_odoo.odoo_customers'].sync_customers_button()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Holded Contacts',
+    'res_model': 'holded_sync_odoo.odoo_customers',
+    'view_mode': 'tree,form',
+    'target': 'current',
+}
             </field>
         </record>
 
+<!--        <record model="ir.actions.act_window" id="odoo_customers_list_action">-->
+<!--            <field name="name">Holded Contacts</field>-->
+<!--            <field name="res_model">holded_sync_odoo.odoo_customers</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">New Customer-->
+<!--                </p>-->
+<!--            </field>-->
+<!--        </record>-->
+
         <menuitem id="odoo_customers_menu" name="Contacts"
                   parent="main_holded_sync_odoo_menu"
-                  action="odoo_customers_list_action"
+                  action="action_server_sync_and_open_customers"
                   sequence="20"/>
 
         <record id="view_odoo_customers_tree" model="ir.ui.view">
             <field name="name">odoo_customers.tree</field>
             <field name="model">holded_sync_odoo.odoo_customers</field>
             <field name="arch" type="xml">
-                <tree>
-                    <button name="sync_customers_button" string="Synchronize" type="object" class="btn-primary"/>
+                <tree create="false">
+                    <header>
+                        <button name="sync_customers_button" string="Synchronize" type="object" class="oe_highlight"/>
+                    </header>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
                     <field name="holded_customer_id"/>
                     <field name="name"/>
                     <field name="code"/>
@@ -81,3 +101,5 @@
 
     </data>
 </odoo>
+
+

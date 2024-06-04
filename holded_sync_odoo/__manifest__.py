@@ -23,6 +23,7 @@
         'views/odoo_taxes.xml',
         'views/apikeyconfig.xml',
         'views/autosync.xml',
+        'data/ir_cron_data.xml',
     ],
     'demo': [
         'demo/demo.xml',

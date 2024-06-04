@@ -13,6 +13,7 @@ class Treasury(models.Model):
     name = fields.Char(string='Bank Name',)
     bic = fields.Char(string='BIC/SWIFT')
     acc_number = fields.Char(string='IBAN',)
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -83,7 +84,11 @@ class Treasury(models.Model):
 
     def bring_treasuries(self):
         try:
+            existing_customers = self.env['holded_sync_odoo.odoo_treasuries'].search([])
+            existing_customers.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
+
             if response.status_code == 200:
                 holded_treasuries = response.json()
                 odoo_treasuries = self.env['holded_sync_odoo.odoo_treasuries'].search([])
@@ -103,6 +108,9 @@ class Treasury(models.Model):
                         treasury_exist.write(treasury_info)
             else:
                 _logger.error("Error while fetching treasuries from Holded: %s", response.text)
+
+            self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
+
         except Exception as e:
             _logger.error("An error occurred while bringing treasuries from Holded to Odoo: %s", e)
 

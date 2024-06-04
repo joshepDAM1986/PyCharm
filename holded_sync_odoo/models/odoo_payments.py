@@ -24,6 +24,8 @@ class Payment(models.Model):
     invoiceNum = fields.Char(string='Document Number')
     odoo_document_id = fields.Char(string='Odoo Document ID')
     odoo_payment_id = fields.Char(string="Odoo Payment ID")
+    odoo_document_name = fields.Char(string='Odoo Document Name')
+    odoo_payment_name = fields.Char(string="Odoo Payment Name")
 
     @property
     def holded_api_url(self):
@@ -39,12 +41,11 @@ class Payment(models.Model):
             "key": api_key
         }
 
-    def clear_payments(self):
-        existing_payments = self.env['holded_sync_odoo.odoo_payments'].search([])
-        existing_payments.unlink()
-
     def bring_payments(self):
         try:
+            existing_payments = self.env['holded_sync_odoo.odoo_payments'].search([])
+            existing_payments.unlink()
+
             response = requests.get(self.holded_api_url, headers=self.holded_api_headers)
 
             if response.status_code == 200:
@@ -63,6 +64,11 @@ class Payment(models.Model):
                     odoo_document_id = desc.split(' ')[1]
                     odoo_document_id_stripped = odoo_document_id.strip()
 
+                    odoo_document_name = self.env['account.move'].search([('id', '=', odoo_document_id_stripped)],
+                                                                         limit=1).name
+                    odoo_payment_name = self.env['account.payment'].search([('id', '=', odoo_payment_id_stripped)],
+                                                                           limit=1).name
+
                     date_timestamp = payment_data.get('date')
                     utc_datetime = datetime.fromtimestamp(date_timestamp, pytz.utc)
                     my_datetime = utc_datetime.astimezone(timezone)
@@ -71,6 +77,8 @@ class Payment(models.Model):
                     payment_info = {
                         'odoo_document_id': odoo_document_id_stripped,
                         'odoo_payment_id': odoo_payment_id_stripped,
+                        'odoo_document_name': odoo_document_name,
+                        'odoo_payment_name': odoo_payment_name,
                         'holded_payment_id': holded_payment_id,
                         'bankId': payment_data.get('bankId') or 'Cash',
                         'contactId': payment_data.get('contactId'),
@@ -90,7 +98,6 @@ class Payment(models.Model):
 
     def sync_payments_button(self):
         try:
-            self.clear_payments()
             self.bring_payments()
         except Exception as e:
             _logger.error("An error occurred while syncing invoices: %s", e)

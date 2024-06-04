@@ -18,6 +18,7 @@ class Invoice(models.Model):
     holded_amount_total = fields.Float(string="Total")
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -42,6 +43,7 @@ class Invoice(models.Model):
             for index in range(0, total_invoices, batch_size):
                 batch_invoices = odoo_invoices[index:index + batch_size]
                 self.process_batch(batch_invoices)
+            self.bring_invoices_odoo()
         except Exception as e:
             _logger.error("An error occurred inserting invoices into Holded: %s", e)
 
@@ -87,7 +89,6 @@ class Invoice(models.Model):
                             _logger.error("Error processing invoice %s in Holded: %s", odoo_invoice.id, response.text)
                     else:
                         _logger.info("Invoice %s already exists in Holded", odoo_invoice.name)
-            self.bring_invoices_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
@@ -108,9 +109,6 @@ class Invoice(models.Model):
             for index in range(0, total_invoices, batch_size):
                 batch_invoices = odoo_invoices[index:index + batch_size]
                 self.process_payment_batch(batch_invoices)
-
-            self.bring_invoices_odoo()
-
         except Exception as e:
             _logger.error(f"An error occurred while processing payments in Holded: {e}")
 
@@ -207,6 +205,9 @@ class Invoice(models.Model):
                     }
 
                     self.env['holded_sync_odoo.odoo_invoices'].create(invoice_info)
+
+                self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
+
         except Exception as e:
             _logger.error("An error occurred while bringing invoices from Holded to Odoo: %s", e)
 

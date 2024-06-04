@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+
         <record model="ir.actions.act_window" id="autosync_list_action">
             <field name="name">Synchronization</field>
             <field name="res_model">holded_sync_odoo.autosync</field>
@@ -14,7 +14,7 @@
         <menuitem id="autosync_menu" name="Sync All"
                   parent="main_holded_sync_odoo_menu"
                   action="action_server_autosync"
-                  sequence="90"/>
+                  sequence="100"/>
 
         <record id="view_autosync_tree" model="ir.ui.view">
             <field name="name">autosync.tree</field>
@@ -57,5 +57,6 @@
                 action = env['holded_sync_odoo.autosync'].autosync_everything_button()
             </field>
         </record>
+
     </data>
 </odoo>

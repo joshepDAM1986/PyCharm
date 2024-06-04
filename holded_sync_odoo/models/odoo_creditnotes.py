@@ -19,6 +19,7 @@ class Creditnotes(models.Model):
     holded_payment_charged = fields.Float(string='Charged')
     holded_residual_payment = fields.Float(string='Residual')
     holded_payment_id = fields.Char(string="Holded Payment ID")
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -43,6 +44,7 @@ class Creditnotes(models.Model):
             for index in range(0, total_creditnotes, batch_size):
                 batch_creditnotes = odoo_creditnotes[index:index + batch_size]
                 self.process_batch(batch_creditnotes)
+            self.bring_creditnotes_odoo()
         except Exception as e:
             _logger.error("An error occurred inserting credit notes into Holded: %s", e)
 
@@ -94,7 +96,6 @@ class Creditnotes(models.Model):
                                           response.text)
                     else:
                         _logger.info("Credit note %s already exists in Holded", odoo_creditnotes.name)
-            self.bring_creditnotes_odoo()
         except Exception as e:
             _logger.error("An error occurred while processing batch: %s", e)
 
@@ -114,8 +115,6 @@ class Creditnotes(models.Model):
             for index in range(0, total_creditnotes, batch_size):
                 batch_creditnotes = odoo_creditnotes[index:index + batch_size]
                 self.process_payment_batch(batch_creditnotes)
-
-            self.bring_creditnotes_odoo()
         except Exception as e:
             _logger.error(f"An error occurred while processing payments in Holded: {e}")
 
@@ -211,6 +210,9 @@ class Creditnotes(models.Model):
                     }
 
                     self.env['holded_sync_odoo.odoo_creditnotes'].create(creditnote_info)
+
+                self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
+
         except Exception as e:
             _logger.error("An error occurred while bringing credit notes from Holded to Odoo: %s", e)
 

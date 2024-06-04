@@ -24,7 +24,7 @@ class OdooTaxes(models.Model):
     odoo_tax_id = fields.Many2one('account.tax', string='Odoo Taxes')
     holded_tax_id = fields.Many2one('holded_sync_odoo.holded_tax', string='Holded Taxes')
     holded_tax_key = fields.Char(related='holded_tax_id.key', string='Holded Taxes Key', store=True)
-
+    last_sync = fields.Datetime(string='Last Sync', readonly=True, default=False)
 
     @property
     def holded_api_url(self):
@@ -67,6 +67,8 @@ class OdooTaxes(models.Model):
                         self.env['holded_sync_odoo.odoo_taxes'].create({'holded_tax_id': holded_tax.id})
             else:
                 _logger.error("Error while fetching taxes from Holded: %s", response.text)
+
+            self.sudo().search([], limit=1).write({'last_sync': fields.Datetime.now()})
 
         except Exception as e:
             _logger.error("An error occurred while bringing taxes from Holded to Odoo: %s", e)
