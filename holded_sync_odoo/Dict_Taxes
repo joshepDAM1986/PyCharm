@@ -1,7 +1,0 @@
-
-TAXES_MAPPING = {
-                  "IVA 21% (Bienes)": "s_iva_21",
-                  "Retenciones a cuenta IRPF 19%": "s_ret_19"
-                  "Retenciones a cuenta IRPF 15%": "s_ret_15"
-            }
-
