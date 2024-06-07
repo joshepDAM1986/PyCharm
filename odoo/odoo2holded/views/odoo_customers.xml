@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_server_sync_and_open_customers" model="ir.actions.server">
+            <field name="name">Sync and Open Customers</field>
+            <field name="model_id" ref="model_odoo2holded_odoo_customers"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env['odoo2holded.odoo_customers'].sync_customers_button()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Holded Contacts',
+    'res_model': 'odoo2holded.odoo_customers',
+    'view_mode': 'tree,form',
+    'target': 'current',
+}
+            </field>
+        </record>
+
+<!--        <record model="ir.actions.act_window" id="odoo_customers_list_action">-->
+<!--            <field name="name">Holded Contacts</field>-->
+<!--            <field name="res_model">odoo2holded.odoo_customers</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">New Customer-->
+<!--                </p>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <menuitem id="odoo_customers_menu" name="Contacts"
+                  parent="main_odoo2holded_menu"
+                  action="action_server_sync_and_open_customers"
+                  sequence="20"/>
+
+        <record id="view_odoo_customers_tree" model="ir.ui.view">
+            <field name="name">odoo_customers.tree</field>
+            <field name="model">odoo2holded.odoo_customers</field>
+            <field name="arch" type="xml">
+                <tree create="false">
+                    <header>
+                        <button name="sync_customers_button" string="Synchronize" type="object" class="oe_highlight"/>
+                    </header>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="email"/>
+                    <field name="website"/>
+                    <field name="phone"/>
+                    <field name="mobile"/>
+                    <field name="address"/>
+                    <field name="city"/>
+                    <field name="postalCode"/>
+                    <field name="province"/>
+                    <field name="country"/>
+                    <field name="countryCode"/>
+                    <field name="tags" widget="customer_tags_widget"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_odoo_customers_search">
+            <field name="name">odoo_customers.search</field>
+            <field name="model">odoo2holded.odoo_customers</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_odoo_customers_form" model="ir.ui.view">
+            <field name="name">odoo_customers.form</field>
+            <field name="model">odoo2holded.odoo_customers</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="holded_customer_id" readonly="1"/>
+                            <field name="name" readonly="1"/>
+                            <field name="code" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                            <field name="website" readonly="1"/>
+                            <field name="phone" readonly="1"/>
+                            <field name="mobile" readonly="1"/>
+                            <field name="address" readonly="1"/>
+                            <field name="city" readonly="1"/>
+                            <field name="postalCode" readonly="1"/>
+                            <field name="province" readonly="1"/>
+                            <field name="country" readonly="1"/>
+                            <field name="countryCode" readonly="1"/>
+                            <field name="tags" widget="customer_tags_widget" readonly="1"/>
+                        </group>
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+
+

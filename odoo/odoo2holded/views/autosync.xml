@@ -1,0 +1,52 @@
+<odoo>
+    <data>
+
+        <record id="action_server_autosync" model="ir.actions.server">
+            <field name="name">Sync All</field>
+            <field name="model_id" ref="model_odoo2holded_autosync"/>
+            <field name="state">code</field>
+            <field name="code">
+                action = env['odoo2holded.autosync'].autosync_everything_button()
+            </field>
+        </record>
+
+        <menuitem id="autosync_menu" name="Sync All"
+                  parent="main_odoo2holded_menu"
+                  action="action_server_autosync"
+                  sequence="100"/>
+
+        <record id="view_autosync_tree" model="ir.ui.view">
+            <field name="name">autosync.tree</field>
+            <field name="model">odoo2holded.autosync</field>
+            <field name="arch" type="xml">
+                <tree>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_autosync_search">
+            <field name="name">autosync.search</field>
+            <field name="model">odoo2holded.autosync</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_autosync_form" model="ir.ui.view">
+            <field name="name">autosync.form</field>
+            <field name="model">odoo2holded.autosync</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                        </group>
+                        <notebook>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

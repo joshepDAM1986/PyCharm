@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_server_sync_and_open_creditnotes" model="ir.actions.server">
+            <field name="name">Sync and Open Credit Notes</field>
+            <field name="model_id" ref="model_odoo2holded_odoo_creditnotes"/>
+            <field name="state">code</field>
+            <field name="code">
+action = env['odoo2holded.odoo_creditnotes'].sync_creditnotes_button()
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Holded Credit Notes',
+    'res_model': 'odoo2holded.odoo_creditnotes',
+    'view_mode': 'tree,form',
+    'target': 'current',
+}
+            </field>
+        </record>
+
+<!--        <record model="ir.actions.act_window" id="odoo_creditnotes_list_action">-->
+<!--            <field name="name">Holded Credit's Notes</field>-->
+<!--            <field name="res_model">odoo2holded.odoo_creditnotes</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">New Credit Note</p>-->
+<!--            </field>-->
+<!--            <field name="context">{'button_sync_visible': True}</field>-->
+<!--        </record>-->
+
+        <menuitem id="odoo_creditnotes_menu" name="Credit Notes"
+                  parent="main_odoo2holded_menu"
+                  action="action_server_sync_and_open_creditnotes"
+                  sequence="70"/>
+
+        <record id="view_odoo_creditnotes_tree" model="ir.ui.view">
+            <field name="name">odoo_creditnotes.tree</field>
+            <field name="model">odoo2holded.odoo_creditnotes</field>
+            <field name="arch" type="xml">
+                <tree create="false">
+                    <header>
+                        <button name="sync_creditnotes_button" string="Synchronize" type="object" class="oe_highlight"/>
+                    </header>
+                    <field name="last_sync" invisible="context.get('hide_last_sync', False)"/>
+                    <field name="contactName"/>
+                    <field name="invoiceNum"/>
+                    <field name="holded_payment_state"/>
+                    <field name="holded_amount_total"/>
+                    <field name="holded_payment_charged"/>
+                    <field name="holded_residual_payment"/>
+                </tree>
+            </field>
+        </record>
+
+         <record model="ir.ui.view" id="view_odoo_creditnotes_search">
+            <field name="name">odoo_creditnotes.search</field>
+            <field name="model">odoo2holded.odoo_creditnotes</field>
+            <field name="arch" type="xml">
+                <search>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_odoo_creditnotes_form" model="ir.ui.view">
+            <field name="name">odoo_creditnotes.form</field>
+            <field name="model">odoo2holded.odoo_creditnotes</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="holded_creditnote_id" readonly="1"/>
+                            <field name="contactName" readonly="1"/>
+                            <field name="invoiceNum" readonly="1"/>
+                            <field name="holded_payment_state" readonly="1"/>
+                            <field name="holded_amount_total" readonly="1"/>
+                            <field name="holded_payment_charged" readonly="1"/>
+                            <field name="holded_residual_payment" readonly="1"/>
+                        </group>
+                        <notebook>
+
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
