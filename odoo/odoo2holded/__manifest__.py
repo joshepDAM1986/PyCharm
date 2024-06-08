@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "odoo2holded",
+    'name': "Odoo2Holded",
     'summary': """
         An Odoo module that is synchronized with Holded """,
     'description': """
         An Odoo module that is synchronized with Holded to import several data .
     """,
-    'author': "WhiteWall Software",
+    'author': "WhiteWall Sofware",
     'website': "https://whitewall-ers.com",
     'category': 'Accounting',
     'version': '1.0',
